@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0d1b2e">
+<title>Аксолотль-трейдер — презентация</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-deep:#081020; --bg:#0d1b2e; --panel:#16263e; --panel2:#1c3050; --line:#2c4667;
+  --ink:#eaf6ff; --dim:#8fb3d9; --aqua:#4ce0c3; --aqua-hi:#6ff2dc;
+  --pink:#ffa7c9; --pink-deep:#e26a9a; --gold:#ffd23e;
+  --up:#43e97b; --down:#ff5f7a; --outline:#071018;
+  --display:'Pixelify Sans', monospace; --body:'Golos Text', system-ui, sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--bg-deep); color:var(--ink); font-family:var(--body);
+  overscroll-behavior:none; overflow:hidden;
+}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.06;
+  background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px)}
+.deck{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;
+  height:100dvh;scrollbar-width:none;overscroll-behavior-x:contain}
+.deck::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100vw;width:100vw;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;
+  padding:max(20px,env(safe-area-inset-top)) 22px calc(64px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;justify-content:center;gap:14px;position:relative;
+  background:
+    radial-gradient(ellipse 130% 55% at 50% -12%, #14283f 0%, transparent 60%),
+    radial-gradient(ellipse 120% 45% at 50% 115%, #0a1a30 0%, transparent 55%),
+    var(--bg);
+}
+.bub{position:absolute;bottom:-24px;width:6px;height:6px;background:rgba(76,224,195,.22);
+  animation:rise linear infinite;pointer-events:none}
+@keyframes rise{to{transform:translateY(-110dvh)}}
+
+.tag{font-family:var(--display);font-size:12px;letter-spacing:2px;color:var(--gold);
+  display:flex;align-items:center;gap:8px;text-transform:uppercase}
+.tag::before{content:"";width:10px;height:10px;background:var(--gold);
+  box-shadow:3px 3px 0 var(--outline)}
+h1,h2{font-family:var(--display);text-shadow:3px 3px 0 var(--outline);line-height:1.15}
+h1{font-size:clamp(26px,8vw,44px);color:var(--aqua)}
+h2{font-size:clamp(20px,6vw,32px);color:var(--ink)}
+.lead{color:var(--dim);font-size:clamp(13px,3.6vw,16px);line-height:1.55}
+.big{color:var(--ink)}
+
+.card{background:var(--panel);border:3px solid var(--outline);box-shadow:5px 5px 0 rgba(7,16,24,.85);
+  padding:14px 16px;position:relative}
+.card.t-aqua::before,.card.t-pink::before,.card.t-gold::before,.card.t-up::before,.card.t-down::before{
+  content:"";position:absolute;top:-3px;left:-3px;right:-3px;height:7px;border:3px solid var(--outline)}
+.card.t-aqua::before{background:var(--aqua)} .card.t-pink::before{background:var(--pink)}
+.card.t-gold::before{background:var(--gold)} .card.t-up::before{background:var(--up)}
+.card.t-down::before{background:var(--down)}
+.card h3{font-family:var(--display);font-size:clamp(14px,4vw,18px);color:var(--aqua);margin-bottom:6px}
+.card p{font-size:clamp(12px,3.4vw,14px);color:var(--dim);line-height:1.5}
+.card p b{color:var(--ink);font-weight:600}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stack{display:flex;flex-direction:column;gap:12px}
+
+.num{font-family:var(--display);color:var(--gold);font-size:clamp(22px,7vw,34px);
+  text-shadow:2px 2px 0 var(--outline)}
+.kpi{display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+.kpi .lbl{font-size:clamp(11px,3vw,13px);color:var(--dim);line-height:1.35}
+
+.chip{display:inline-block;font-family:var(--display);font-size:11px;letter-spacing:1px;
+  background:var(--panel2);border:2px solid var(--outline);color:var(--aqua);
+  padding:4px 8px;margin:2px 2px 0 0;box-shadow:2px 2px 0 rgba(7,16,24,.8)}
+.chip.p{color:var(--pink)} .chip.g{color:var(--gold)} .chip.u{color:var(--up)} .chip.d{color:var(--down)}
+
+table{width:100%;border-collapse:collapse;font-size:clamp(10.5px,2.9vw,13px)}
+th{font-family:var(--display);font-weight:600;color:var(--gold);text-align:left;
+  padding:6px 6px;border-bottom:3px solid var(--outline);font-size:clamp(10px,2.8vw,12px);letter-spacing:.5px}
+td{padding:7px 6px;border-bottom:2px solid var(--line);color:var(--dim);vertical-align:top;line-height:1.4}
+td b{color:var(--ink);font-weight:600}
+td .yes{color:var(--up)} td .no{color:var(--down)}
+
+.step{display:flex;gap:12px;align-items:flex-start}
+.stepn{font-family:var(--display);color:var(--bg-deep);background:var(--aqua);
+  min-width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;box-shadow:3px 3px 0 var(--outline);border:2px solid var(--outline)}
+.step div p{font-size:clamp(12px,3.4vw,14px);color:var(--dim);line-height:1.45}
+.step div b{color:var(--ink)}
+
+.tl{display:flex;flex-direction:column;gap:0}
+.tli{display:grid;grid-template-columns:96px 14px 1fr;gap:10px;align-items:start}
+.tli .when{font-family:var(--display);color:var(--aqua);font-size:clamp(12px,3.4vw,14px);
+  text-align:right;padding-top:2px}
+.tli .dot{width:12px;height:12px;background:var(--gold);border:2px solid var(--outline);
+  margin-top:3px;box-shadow:2px 2px 0 rgba(7,16,24,.8)}
+.tli .dot::after{content:"";display:block;width:2px;height:52px;background:var(--line);margin:6px 3px 0}
+.tli:last-child .dot::after{display:none}
+.tli .what b{display:block;font-family:var(--display);color:var(--ink);font-size:clamp(12.5px,3.6vw,15px)}
+.tli .what span{font-size:clamp(11px,3vw,13px);color:var(--dim);line-height:1.4}
+
+.axo{width:104px;height:88px;flex:0 0 auto}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-size:12px;
+  border:2px solid var(--aqua);color:var(--aqua);padding:5px 10px;box-shadow:3px 3px 0 var(--outline)}
+.pill.d{border-color:var(--down);color:var(--down)} .pill.u{border-color:var(--up);color:var(--up)}
+.pill.g{border-color:var(--gold);color:var(--gold)}
+
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;align-items:center;
+  justify-content:center;gap:10px;padding:0 16px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(transparent, rgba(8,16,32,.92) 40%)}
+.navbtn{font-family:var(--display);font-size:18px;background:var(--panel);color:var(--aqua);
+  border:2px solid var(--outline);box-shadow:3px 3px 0 rgba(7,16,24,.85);
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.navbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(7,16,24,.85)}
+.counter{font-family:var(--display);font-size:13px;color:var(--dim);min-width:64px;text-align:center}
+.segs{display:flex;gap:4px}
+.seg{width:14px;height:8px;background:var(--panel2);border:2px solid var(--outline)}
+.seg.on{background:var(--aqua)}
+.hint{position:fixed;top:max(10px,env(safe-area-inset-top));right:14px;z-index:50;
+  font-family:var(--display);font-size:10px;color:var(--dim);letter-spacing:1px;opacity:.8}
+
+.logo-row{display:flex;align-items:center;gap:16px}
+.logo-row .t h1{font-size:clamp(28px,9vw,46px)}
+.logo-row .t .sub{font-family:var(--display);color:var(--pink);letter-spacing:4px;
+  font-size:clamp(12px,3.6vw,16px);margin-top:4px}
+.cta{display:inline-block;font-family:var(--display);font-size:clamp(14px,4vw,18px);
+  color:var(--bg-deep);background:var(--gold);border:3px solid var(--outline);
+  box-shadow:5px 5px 0 rgba(7,16,24,.85);padding:12px 18px;text-decoration:none}
+.cta:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(7,16,24,.85)}
+.mini{font-size:clamp(11px,3vw,13px);color:var(--dim)}
+.footer-note{font-family:var(--display);font-size:10px;color:var(--line);letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="hint">← СВАЙП →</div>
+<div class="deck" id="deck">
+
+<section class="slide">
+  <div style="text-align:center" class="stack">
+    <svg class="axo" style="margin:0 auto" viewBox="0 0 26 22" shape-rendering="crispEdges" aria-label="Аксолотль">
+      <g fill="#ff5f8f"><rect x="1" y="4" width="2" height="1"/><rect x="0" y="3" width="2" height="1"/><rect x="2" y="2" width="1" height="2"/><rect x="23" y="4" width="2" height="1"/><rect x="24" y="3" width="2" height="1"/><rect x="23" y="2" width="1" height="2"/><rect x="1" y="8" width="2" height="1"/><rect x="0" y="9" width="2" height="1"/><rect x="2" y="10" width="1" height="1"/><rect x="23" y="8" width="2" height="1"/><rect x="24" y="9" width="2" height="1"/><rect x="23" y="10" width="1" height="1"/></g>
+      <g fill="#ffa7c9"><rect x="3" y="4" width="20" height="10"/><rect x="5" y="2" width="16" height="2"/><rect x="5" y="14" width="16" height="4"/><rect x="7" y="18" width="4" height="2"/><rect x="15" y="18" width="4" height="2"/></g>
+      <g fill="#ffd9e8"><rect x="9" y="13" width="8" height="4"/></g>
+      <g fill="#2a1230"><rect x="7" y="6" width="3" height="3"/><rect x="16" y="6" width="3" height="3"/><rect x="11" y="11" width="4" height="1"/></g>
+      <g fill="#fff"><rect x="8" y="6" width="1" height="1"/><rect x="17" y="6" width="1" height="1"/></g>
+      <g fill="#e26a9a"><rect x="5" y="9" width="2" height="1"/><rect x="19" y="9" width="2" height="1"/></g>
+    </svg>
+    <h1 style="color:var(--aqua)">АКСОЛОТЛЬ<br>ТРЕЙДЕР</h1>
+    <div class="lead" style="font-size:clamp(14px,4vw,18px);color:var(--ink)">Биржевые хроники — игра, где ты<br>проживаешь <b>реальную историю рынка</b></div>
+    <div><span class="chip">📱 мобильная</span><span class="chip p">🎮 игра</span><span class="chip g">📊 данные МосБиржи</span><span class="chip u">обучение</span></div>
+    <div class="footer-note">ПРЕЗЕНТАЦИЯ ПРОЕКТА · ЛИСТАЙ СВАЙПОМ →</div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">01 · Проблема</div>
+  <h2>Инвесторов много.<br>Понимающих — единицы</h2>
+  <div class="row3">
+    <div class="card t-gold kpi"><span class="num">~30млн</span><span class="lbl">брокерских счетов физлиц на Мосбирже к 2025–2026 (по открытым данным)</span></div>
+    <div class="card t-down kpi"><span class="num">70%</span><span class="lbl">оборота акций — частные инвесторы. Большинство — без опыта кризисов</span></div>
+    <div class="card t-pink kpi"><span class="num">0</span><span class="lbl">приятных способов «пережить» обвал 2014 или ковид-2020 без потери денег</span></div>
+  </div>
+  <div class="card">
+    <h3>Почему существующее — не работает</h3>
+    <p><b>Курсы</b> — скучные лонгриды, бросают на 2-й главе. <b>Симуляторы trading</b> — сложные,
+    страшно и непонятно. <b>Телеграм-каналы</b> — учат «покупать мою стратегию», а не думать.</p>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">02 · Решение</div>
+  <h2>Машина времени по бирже</h2>
+  <div class="lead big">Игра показывает настоящие события прошлого — а ты решаешь, куда пойдёт акция.</div>
+  <div class="stack">
+    <div class="step"><div class="stepn">1</div><div><p><b>Читаешь ленту новостей</b> реального периода: ОПЕК+, ставки ЦБ, пандемии — компании пока не видно</p></div></div>
+    <div class="step"><div class="stepn">2</div><div><p><b>Угадываешь компанию и год</b> — 4 варианта, подсказки в новостях</p></div></div>
+    <div class="step"><div class="stepn">3</div><div><p><b>Ставишь: ▲ вверх или ▼ вниз</b> — график настоящий, до «дня решения», 15 секунд на раздумье</p></div></div>
+    <div class="step"><div class="stepn">4</div><div><p><b>Смотришь, что было на самом деле</b> — анимированный ревил + разбор: почему, факты, урок</p></div></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">03 · Почему это учит</div>
+  <h2>Эмоция ставки → память навсегда</h2>
+  <div class="card t-aqua">
+    <h3>Петля обучения</h3>
+    <p><b>Ситуация</b> → <b>решение</b> → <b>твои деньги на кону</b> (очки) → <b>разбор реальности</b> → <b>урок в карман</b>.
+    Ты не читаешь про обвал 2022 — ты его проживаешь. И запоминаешь механику, а не даты.</p>
+  </div>
+  <div class="row2">
+    <div class="card t-up"><h3>Один кризис — два урока</h3><p>Пандемия-2020: <b>Аэрофлот −33%</b> против <b>Магнит +53%</b>. Один и тот же макрособытие — противоположные исходы. Сектор решает.</p></div>
+    <div class="card t-down"><h3>Гэп-2022 в графике</h3><p>Торги стояли месяц — на графике дыра. Урок про нерыночный риск лучше любых слов: стоп-лосс не спасает, если биржа закрыта.</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">04 · Рынок</div>
+  <h2>Ниша пуста</h2>
+  <table>
+    <tr><th>Приложение</th><th>Что делает</th><th>Чего нет</th></tr>
+    <tr><td><b>Т-Учебный счёт</b></td><td>симулятор текущих торгов</td><td class="no">игры, истории, уроков</td></tr>
+    <tr><td><b>Investmate</b></td><td>карточки теории</td><td class="no">реальных данных, ставок</td></tr>
+    <tr><td><b>Invstr / Zogo</b></td><td>фэнтези-портфели, EN</td><td class="no">RU, истории, мобайл-first</td></tr>
+    <tr><td><b>WS Survivor</b></td><td>бумажная торговля</td><td class="no">UX из 2010-х</td></tr>
+    <tr><td><b>Duolingo</b></td><td>эталон геймификации</td><td class="no">финансов нет — роль займём мы</td></tr>
+  </table>
+  <div class="card t-gold">
+    <p><b>Наш слот:</b> «Duolingo инвестиций» на реальной истории Мосбиржи — мобильный, с характером
+    (пиксельный аксолотль), для аудитории, которая выросла на играх, а не на курсах.</p>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">05 · УТП</div>
+  <h2>Почему именно у нас</h2>
+  <div class="row2">
+    <div class="card t-aqua"><h3>📊 Реальные данные</h3><p>Открытое API Мосбиржи: 13 тикеров, 2019–2026, ежедневные свечи. Не рандом — история как она была</p></div>
+    <div class="card t-pink"><h3>🦎 Маскот с характером</h3><p>Пиксельный аксолотль реагирует на исход: радуется, грустит, удивляется. Эмоциональная привязка = возвраты</p></div>
+    <div class="card t-gold"><h3>📱 Мобайл = WebView</h3><p>Заточен под тач и встраивание: PWA, Telegram Mini App, white-label модуль брокера</p></div>
+    <div class="card t-up"><h3>🧠 Урок, а не сигнал</h3><p>Каждый раунд заканчивается разбором: что произошло, почему, чему учит. Учим понимать рынок, а не «покупать»</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">06 · Уже в MVP</div>
+  <h2>5 легендарных кейсов</h2>
+  <div class="stack">
+    <div class="card t-down"><h3>✈️ «Небо закрылось» · Аэрофлот · 2020</h3><p>Пандемия + развал ОПЕК+. <b>−15%</b> за 12 дней, в низе <b>−33%</b>. Урок: циклические бизнесы в кризис</p></div>
+    <div class="card t-up"><h3>🛒 «Люди едут всегда» · Магнит · 2020</h3><p>Паника марта — а продукты растут. <b>+53%</b> за 90 дней. Урок: защитные сектора</p></div>
+    <div class="card t-up"><h3>📦 «Рождество онлайн» · Ozon · 2020</h3><p>Ковидный e-commerce бум после IPO. <b>+48%</b> за 40 дней. Урок: акции роста и их риски</p></div>
+    <div class="card t-up"><h3>🏦 «Ставка бьёт — банки получают» · Сбербанк · 2021</h3><p>ЦБ поднимает ставку с 4,25% до 8,5%. <b>+25%</b> за 60 дней. Урок: куда идут деньги при росте ставки</p></div>
+    <div class="card t-down"><h3>🛢️ «День, когда рынок встал» · ЛУКОЙЛ · 2022</h3><p>Гэп и месяц без торгов. <b>−35%</b>. Урок: нерыночный риск и диверсификация</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">07 · Геймдизайн</div>
+  <h2>Скины, ранги, дуэли</h2>
+  <div class="row2">
+    <div class="card t-gold"><h3>Очки и комбо</h3><p>Компания <b>+150</b> · год <b>+100</b> · ставка <b>+250</b> × скоростной бонус × комбо до <b>×2.5</b></p></div>
+    <div class="card t-aqua"><h3>Лидерборд</h3><p>SQLite/облако, ранги от Планктон-ичинки до <b>Аксолотля-кванта</b> (ELO)</p></div>
+    <div class="card t-pink"><h3>Скины маскота</h3><p>Золотой, кибер, дайвер, бык/медведь — за ачивки. Аквариум растёт с прогрессом</p></div>
+    <div class="card t-up"><h3>Daily Challenge</h3><p>Один кейс в день для всех, окно 24 часа, отдельный лидерборд дня + стрики</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">08 · Крутышки v1.5+</div>
+  <h2>Режимы, которых нет ни у кого</h2>
+  <div class="stack">
+    <div class="card t-aqua"><h3>🕰 Машина времени</h3><p>Любой день с 2000 года: лента новостей, график до события — ставь и смотри продолжение. <b>Бесконечный режим из реальных данных</b></p></div>
+    <div class="card t-pink"><h3> Portfolio Time Machine</h3><p>Собери портфель в 2005-м и промотай 20 лет: кризисы, дивиденды, комиссии</p></div>
+    <div class="card t-gold"><h3>⚔️ Асинхронные дуэли</h3><p>Скинь вызов другу: один кейс — у кого точнее. Пиксель-открытка результата в Telegram</p></div>
+    <div class="card t-up"><h3>🧠 «Что если»</h3><p>Контрфакты в разборах: «а если бы ЦБ не поднял ставку?» — слайдеры сценариев</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">09 · Роадмап</div>
+  <h2>Потихоньку — к продукту</h2>
+  <div class="tl">
+    <div class="tli"><div class="when">v0.9</div><div class="dot"></div><div class="what"><b>MVP (сейчас)</b><span>5 раундов · пиксель-маскот · лидерборд · GitHub Pages</span></div></div>
+    <div class="tli"><div class="when">v1.0</div><div class="dot"></div><div class="what"><b>Публикация · +2–3 нед</b><span>PWA офлайн · 15 раундов · daily · стрики · шеринг в TG</span></div></div>
+    <div class="tli"><div class="when">v1.5</div><div class="dot"></div><div class="what"><b>Машина времени · +1,5 мес</b><span>любой день истории · скины · ELO · дуэли · энциклопедия</span></div></div>
+    <div class="tli"><div class="when">v2.0</div><div class="dot"></div><div class="what"><b>Сообщество · +3–4 мес</b><span>TG-аккаунты · гильдии · турниры · конструктор раундов · US-рынок</span></div></div>
+    <div class="tli"><div class="when">v3.0</div><div class="dot"></div><div class="what"><b>Экосистема · +6 мес</b><span>симулятор портфеля · «что если» · white-label брокерам · подписка</span></div></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">10 · Метрики</div>
+  <h2>Северная звезда</h2>
+  <div class="card t-gold">
+    <h3>⭐ Число игроков в неделю, доигравших раунд до разбора</h3>
+    <p>Не установки, не DAU — именно завершённые циклы обучения. Всё остальное — подчинено ей.</p>
+  </div>
+  <div class="row3">
+    <div class="card kpi"><span class="num">60%</span><span class="lbl">completion 5 раундов (цель v1.0)</span></div>
+    <div class="card kpi"><span class="num">12%</span><span class="lbl">D7 retention (цель v1.0)</span></div>
+    <div class="card kpi"><span class="num">7мин</span><span class="lbl">средняя сессия (цель v1.5)</span></div>
+  </div>
+  <div class="card"><h3>Аналитика роста</h3><p>Точность прогнозов по секторам — растёт ли игрок? Доля вернувшихся к daily. NPS разборов. k-factor шеринга открыток.</p></div>
+</section>
+
+<section class="slide">
+  <div class="tag">11 · Монетизация</div>
+  <h2>Деньги не ломают игру</h2>
+  <div class="stack">
+    <div class="card t-aqua"><h3>🆓 Freemium</h3><p>Всё обучение — бесплатно навсегда. Подписка «Premium-аквариум»: косметика, hardcore-режимы, бесконечная машина времени — 199–299 ₽/мес</p></div>
+    <div class="card t-gold"><h3>🏢 B2B white-label</h3><p>Обучающий игровой модуль под брендом брокера/банка: их клиенты, наш движок. Брокерам нужен онбординг новичков — у нас он готов</p></div>
+    <div class="card t-pink"><h3>🤝 Партнёрки</h3><p>Реферальные ссылки брокеров после обучения — с дисклеймерами и после юридической проверки. Никакой «инвестиционной рекламы» внутри геймплея</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="tag">12 · Статус</div>
+  <h2>Как это строится</h2>
+  <div class="row2">
+    <div class="card t-aqua"><h3>Стек</h3><p>React 18 + Vite · пиксель-SVG маскот · Express + SQLite (лидерборд) · открытый API Мосбиржи · GitHub Pages + Actions</p></div>
+    <div class="card t-pink"><h3>Команда</h3><p>Оркестратор + 4 агента: 🎨 дизайнер · ⚙️ бекендер · 💻 фронтендер · 🧪 тестировщик. Пайплайн в ORCHESTRATOR.md</p></div>
+    <div class="card t-gold"><h3>Готово сейчас</h3><p>Данные 13 тикеров 2019–2026 · контент 5 раундов · API + SQLite · дизайн-система · статик-режим для Pages</p></div>
+    <div class="card t-up"><h3>Дальше</h3><p>Экраны игры · скриншоты этапов в docs/screenshots · деплой · PWA</p></div>
+  </div>
+  <div style="text-align:center">
+    <a class="cta" href="https://iriiv.github.io/axolotl-trader/" target="_blank" rel="noopener">▶ ОТКРЫТЬ ИГРУ</a>
+    <div class="mini" style="margin-top:10px">iriiv.github.io/axolotl-trader · скоро: добавь на главный экран 📲</div>
+  </div>
+</section>
+
+</div>
+
+<div class="nav">
+  <div class="navbtn" id="prev">◀</div>
+  <div class="segs" id="segs"></div>
+  <div class="counter" id="counter">1 / 13</div>
+  <div class="navbtn" id="next">▶</div>
+</div>
+
+<script>
+const deck = document.getElementById('deck');
+const slides = [...document.querySelectorAll('.slide')];
+const segsEl = document.getElementById('segs');
+const counter = document.getElementById('counter');
+let cur = 0;
+slides.forEach((_, i) => {
+  const s = document.createElement('div');
+  s.className = 'seg' + (i === 0 ? ' on' : '');
+  s.onclick = () => goTo(i);
+  segsEl.appendChild(s);
+});
+const segs = [...segsEl.children];
+function goTo(i){
+  cur = Math.max(0, Math.min(slides.length - 1, i));
+  deck.scrollTo({ left: slides[cur].offsetLeft, behavior: 'smooth' });
+}
+document.getElementById('prev').onclick = () => goTo(cur - 1);
+document.getElementById('next').onclick = () => goTo(cur + 1);
+deck.addEventListener('scroll', () => {
+  const i = Math.round(deck.scrollLeft / window.innerWidth);
+  if (i !== cur) { cur = i; }
+  segs.forEach((s, j) => s.classList.toggle('on', j === cur));
+  counter.textContent = (cur + 1) + ' / ' + slides.length;
+}, { passive: true });
+addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') goTo(cur + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') goTo(cur - 1);
+});
+// пузырьки на каждом слайде
+slides.forEach(sl => {
+  for (let i = 0; i < 8; i++) {
+    const b = document.createElement('div');
+    b.className = 'bub';
+    b.style.left = Math.random() * 100 + '%';
+    b.style.animationDuration = (7 + Math.random() * 9) + 's';
+    b.style.animationDelay = (-Math.random() * 12) + 's';
+    b.style.width = b.style.height = (3 + Math.round(Math.random() * 3)) + 'px';
+    sl.appendChild(b);
+  }
+});
+</script>
+</body>
+</html>
