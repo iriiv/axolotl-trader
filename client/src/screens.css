@@ -1,0 +1,681 @@
+/* ═══════════════════════════════════════════════════════════════
+   Стили игровых экранов. Только var()/color-mix от tokens.css,
+   никаких border-radius и blur. Тап-таргеты ≥52px.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── каркас экрана ── */
+.scr {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 70vh;
+}
+
+.scr-spacer {
+  flex: 1;
+}
+
+/* ── шапка прогресса ── */
+.scr-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 4px 0 2px;
+}
+
+.scr-head__score {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scr-head__score .score__digit {
+  font-size: 26px;
+}
+
+/* ── титульный экран ── */
+.scr-title {
+  position: relative;
+  align-items: center;
+  text-align: center;
+  padding-top: 14px;
+}
+
+.iconbtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 2px solid var(--outline);
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+}
+
+.iconbtn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.iconbtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.title-axo {
+  margin-top: 8px;
+}
+
+.title-logo {
+  margin-top: 10px;
+  font-size: clamp(30px, 8.6vw, 40px);
+  font-weight: 700;
+  line-height: 1.06;
+  text-transform: uppercase;
+  color: var(--aqua-hi);
+}
+
+.title-sub {
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pink);
+  text-shadow: var(--shadow-1);
+}
+
+.title-sub2 {
+  margin-top: 4px;
+  max-width: 320px;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+}
+
+.scr-title .pxbubble {
+  width: 100%;
+  max-width: 360px;
+  text-align: left;
+}
+
+.title-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 10px;
+}
+
+.title-meta {
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: var(--ink-dim);
+}
+
+.title-disclaimer {
+  font-size: 11px;
+  color: var(--ink-dim);
+  opacity: 0.75;
+}
+
+/* ── «как играть» ── */
+.howto {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.howto__step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.howto__ico {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--outline);
+  background: var(--panel-2);
+  color: var(--aqua-hi);
+  box-shadow: var(--shadow-1);
+}
+
+.howto__ico svg {
+  width: 22px;
+  height: 22px;
+}
+
+.howto__title {
+  font-size: 15px;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.howto__text {
+  margin-top: 3px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--ink) 88%, var(--panel));
+}
+
+/* ── ник ── */
+.scr-nick {
+  padding-top: 20px;
+}
+
+.nick-axo,
+.intro-axo,
+.bet-axo,
+.sum-axo,
+.reveal-axo {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.nick-axo .pxbubble,
+.intro-axo .pxbubble,
+.bet-axo .pxbubble,
+.sum-axo .pxbubble,
+.reveal-axo .pxbubble {
+  flex: 1;
+  margin-bottom: 22px;
+}
+
+.nick-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.nick-input {
+  width: 100%;
+  min-height: 62px;
+  padding: 0 14px;
+  border: 3px solid var(--outline);
+  background: var(--panel);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  box-shadow: var(--shadow-2);
+}
+
+.nick-input::placeholder {
+  color: color-mix(in srgb, var(--ink-dim) 60%, transparent);
+}
+
+.nick-input:focus {
+  outline: 3px solid var(--aqua);
+  outline-offset: -3px;
+}
+
+.nick-input.is-bad {
+  border-color: var(--down);
+  color: var(--down);
+}
+
+.field-hint {
+  min-height: 18px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ink-dim);
+}
+
+.field-hint.is-bad {
+  color: var(--down);
+}
+
+/* ── интро раунда ── */
+.intro-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+.intro-emoji {
+  font-size: 56px;
+  line-height: 1;
+  filter: drop-shadow(3px 3px 0 var(--outline));
+}
+
+.intro-theme {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pink);
+}
+
+.intro-title {
+  font-size: clamp(26px, 8vw, 34px);
+  line-height: 1.12;
+}
+
+.intro-hint {
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+/* каскад появления: утилита .u-pop-in уже задаёт анимацию,
+   инлайновый animationDelay перекрывает задержку из shorthand */
+
+/* ── новости ── */
+.news-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.news-title {
+  font-size: 22px;
+}
+
+.news-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.news-card__text {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.news-card.is-old {
+  opacity: 0.82;
+}
+
+.news-card.is-old .news-card__text {
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--ink) 78%, var(--panel));
+}
+
+/* ── квиз ── */
+.quiz-q {
+  font-size: clamp(20px, 6vw, 24px);
+  line-height: 1.15;
+  padding: 4px 0 2px;
+}
+
+.quiz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.quiz-grid .opt {
+  min-height: 88px;
+}
+
+.quiz-grid .opt__label {
+  font-size: 16px;
+}
+
+.quiz-points {
+  min-height: 26px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.quiz-points.is-ok {
+  color: var(--up);
+}
+
+.quiz-points.is-no {
+  color: var(--down);
+}
+
+/* ── ставка ── */
+.bet-title {
+  font-size: clamp(22px, 6.5vw, 26px);
+}
+
+.bet-sub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+
+.chart-panel {
+  padding: 10px 8px 8px;
+  border: 2px solid var(--outline);
+  background: var(--panel);
+  box-shadow: var(--shadow-2);
+}
+
+.bet-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pxbtn.is-chosen {
+  box-shadow: var(--shadow-3), inset 0 0 0 3px var(--ink);
+}
+
+.bet-timeout {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--down);
+  text-align: center;
+}
+
+/* ── ревил ── */
+.reveal-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reveal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.reveal-company {
+  font-size: clamp(19px, 6vw, 24px);
+  line-height: 1.15;
+}
+
+.reveal-thought {
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.reveal-badges {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 2px 2px;
+}
+
+.movepct {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 3px solid var(--outline);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 19px;
+  box-shadow: var(--shadow-2);
+}
+
+.movepct--up {
+  background: color-mix(in srgb, var(--up) 26%, var(--panel));
+  color: var(--up);
+}
+
+.movepct--down {
+  background: color-mix(in srgb, var(--down) 26%, var(--panel));
+  color: var(--down);
+}
+
+.reveal-finaldate {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+}
+
+.reveal-summary {
+  font-weight: 600;
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+
+.reveal-why {
+  margin-top: 8px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--ink) 86%, var(--panel));
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.facts li {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--ink) 86%, var(--panel));
+}
+
+.facts .chip {
+  flex: none;
+  margin-top: 2px;
+}
+
+.lesson {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 2px solid var(--outline);
+  border-left: 6px solid var(--gold);
+  background: color-mix(in srgb, var(--gold) 10%, var(--panel));
+  box-shadow: var(--shadow-1);
+}
+
+.lesson__label {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.lesson__text {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* конфетти (компонент Confetti) */
+.confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti__p {
+  position: absolute;
+  top: -8px;
+  width: 4px;
+  height: 4px;
+  animation: confetti-fall 1.5s steps(10, end) forwards;
+}
+
+@keyframes confetti-fall {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--drift, 0px), 90vh);
+  }
+}
+
+/* ── итоги ── */
+.sum-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  padding-top: 8px;
+}
+
+.sum-title {
+  font-size: clamp(26px, 8vw, 32px);
+}
+
+.sum-verdict {
+  font-family: var(--font-display);
+  color: var(--gold);
+}
+
+/* ── лидерборд ── */
+.lb-offline {
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--gold);
+}
+
+.lb-yourplace {
+  margin-bottom: 10px;
+}
+
+.lb-loading {
+  padding: 12px 0;
+  font-size: 13px;
+  color: var(--ink-dim);
+  text-align: center;
+}
+
+.lb-table {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lb-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 62px 38px 44px;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 6px 8px;
+  border: 2px solid var(--line);
+  background: var(--panel-2);
+}
+
+.lb-row.is-top {
+  border-color: var(--outline);
+  box-shadow: var(--shadow-1);
+}
+
+.lb-row.is-player {
+  border-color: var(--outline);
+  outline: 3px solid var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, var(--panel-2));
+}
+
+.lb-row--head {
+  min-height: 22px;
+  padding: 2px 8px;
+  border: none;
+  background: none;
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.lb-cell-place {
+  display: inline-flex;
+  justify-content: center;
+}
+
+.lb-place {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink-dim);
+}
+
+.lb-place svg {
+  width: 18px;
+  height: 18px;
+}
+
+.lb-place--1 {
+  color: var(--gold);
+}
+
+.lb-place--2 {
+  color: var(--pink);
+}
+
+.lb-place--3 {
+  color: var(--aqua);
+}
+
+.lb-nick {
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lb-row.is-player .lb-nick {
+  font-family: var(--font-display);
+  color: var(--gold);
+}
+
+.lb-score {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  text-align: right;
+  color: var(--gold);
+}
+
+.lb-dir,
+.lb-streak {
+  font-size: 11px;
+  text-align: right;
+  color: var(--ink-dim);
+}
+
+.lb-sep {
+  padding: 2px 0;
+  font-family: var(--font-display);
+  letter-spacing: 0.5em;
+  text-align: center;
+  color: var(--ink-dim);
+}
+
+/* ── мелочи ── */
+.scr > .pxcard {
+  margin-top: 0;
+}

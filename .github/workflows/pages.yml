@@ -30,6 +30,13 @@ jobs:
           npm --prefix client run build
           test -f client/dist/index.html
 
+      - name: Stage deploy artifacts (до переключения веток!)
+        run: |
+          mkdir -p /tmp/deploy
+          cp -r client/dist/. /tmp/deploy/
+          cp presentation/presentation.html /tmp/deploy/presentation.html
+          test -f /tmp/deploy/index.html
+
       - name: Deploy to gh-pages branch
         run: |
           git config user.name "github-actions[bot]"
@@ -37,8 +44,7 @@ jobs:
           git fetch origin gh-pages --depth=1 || true
           git checkout -B gh-pages origin/gh-pages 2>/dev/null || git checkout --orphan gh-pages
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-          cp -r client/dist/. .
-          cp presentation/presentation.html presentation.html
+          cp -r /tmp/deploy/. .
           git add -A
           git commit -m "deploy: ${GITHUB_SHA::7} $(date -u +%Y-%m-%dT%H:%MZ)" || echo "нет изменений — пропускаю"
           git push origin gh-pages

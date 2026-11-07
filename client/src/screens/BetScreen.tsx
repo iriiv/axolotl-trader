@@ -1,0 +1,136 @@
+/* Экран ставки: график-контекст + таймер + ▲/▼.
+   timeLeftRatio считаем от собственного старта экрана (TimerBar не
+   отдаёт остаток) — оба стартуют на монтировании, рассинхрон <1 кадра.
+   По onEnd: блок кнопок → 800мс → переход с bet=null. */
+
+import { useMemo, useRef, useState } from 'react'
+import { Axolotl } from '../design/axolotl'
+import { PixelButton, SpeechBubble, TimerBar } from '../design/ui'
+import { sfx } from '../design/sfx'
+import { haptic } from '../design/haptics'
+import { clamp01 } from '../game/engine'
+import { pickBetPhrase } from '../game/phrases'
+import { PriceChart } from '../components/PriceChart'
+import { GameHeader } from './GameHeader'
+import type { Direction, Round } from '../game/types'
+
+export interface BetScreenProps {
+  round: Round
+  roundNo: number
+  roundsTotal: number
+  betSeconds: number
+  score: number
+  streak: number
+  multiplier: number
+  onBet: (direction: Direction, timeLeftRatio: number) => void
+  onTimeout: () => void
+}
+
+export function BetScreen({
+  round,
+  roundNo,
+  roundsTotal,
+  betSeconds,
+  score,
+  streak,
+  multiplier,
+  onBet,
+  onTimeout,
+}: BetScreenProps) {
+  const [chosen, setChosen] = useState<Direction | null>(null)
+  const [timedOut, setTimedOut] = useState(false)
+  const startRef = useRef<number>(performance.now())
+  const phrase = useMemo(() => pickBetPhrase(), [])
+
+  const blocked = chosen !== null || timedOut
+
+  const handleTap = (dir: Direction) => {
+    if (blocked) return
+    setChosen(dir)
+    const elapsed = performance.now() - startRef.current
+    const ratio = clamp01(1 - elapsed / (betSeconds * 1000))
+    // пауза, чтобы игрок увидел подсветку выбора
+    window.setTimeout(() => onBet(dir, ratio), 450)
+  }
+
+  const handleTimeout = () => {
+    if (blocked) return
+    setTimedOut(true)
+    sfx.wrong()
+    haptic.error()
+    window.setTimeout(() => onTimeout(), 800)
+  }
+
+  return (
+    <div className="scr u-pop-in">
+      <GameHeader
+        roundNo={roundNo}
+        roundsTotal={roundsTotal}
+        score={score}
+        streak={streak}
+        multiplier={multiplier}
+      />
+
+      <div>
+        <h2 className="display bet-title">Куда пойдёт акция?</h2>
+        <p className="bet-sub">Прошлое скрыто. Твоя ставка?</p>
+      </div>
+
+      <div className="chart-panel">
+        <PriceChart
+          dates={round.chart.dates}
+          closes={round.chart.closes}
+          decisionIndex={round.chart.decisionIndex}
+          revealProgress={0}
+          height={236}
+        />
+      </div>
+
+      <TimerBar
+        key={`bet-${round.id}`}
+        seconds={betSeconds}
+        running={!blocked}
+        paused={false}
+        onEnd={handleTimeout}
+      />
+
+      <div className="bet-axo">
+        <Axolotl mood="wow" size={80} animated />
+        <SpeechBubble side="left">{phrase}</SpeechBubble>
+      </div>
+
+      <div className="bet-buttons">
+        <div data-testid="btn-bet-up">
+          <PixelButton
+            variant="up"
+            size="xl"
+            full
+            disabled={blocked}
+            className={chosen === 'up' ? 'is-chosen' : ''}
+            onClick={() => handleTap('up')}
+          >
+            Вверх
+          </PixelButton>
+        </div>
+        <div data-testid="btn-bet-down">
+          <PixelButton
+            variant="down"
+            size="xl"
+            full
+            disabled={blocked}
+            className={chosen === 'down' ? 'is-chosen' : ''}
+            onClick={() => handleTap('down')}
+          >
+            Вниз
+          </PixelButton>
+        </div>
+      </div>
+
+      {timedOut && (
+        <p className="bet-timeout u-pop-in" role="status">
+          Время вышло — ставка пропущена!
+        </p>
+      )}
+    </div>
+  )
+}

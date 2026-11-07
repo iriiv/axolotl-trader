@@ -1,0 +1,131 @@
+/* Титульный экран: маскот, логотип, 3 кнопки, рекорд, дисклеймер */
+
+import { useState } from 'react'
+import { Axolotl } from '../design/axolotl'
+import { Modal, PixelButton, SpeechBubble } from '../design/ui'
+import {
+  IconBook,
+  IconClock,
+  IconQuestion,
+  IconStar,
+  IconSoundOff,
+  IconSoundOn,
+  IconTrophy,
+} from '../design/icons'
+import { pickAxoPhrase } from '../game/phrases'
+import type { GameMeta } from '../game/types'
+
+export interface TitleScreenProps {
+  meta: GameMeta
+  bestScore: number
+  gamesCount: number
+  muted: boolean
+  onToggleMute: () => void
+  onPlay: () => void
+  onLeaderboard: () => void
+}
+
+const HOWTO_STEPS = [
+  {
+    icon: <IconBook />,
+    title: '1 · Читай новости',
+    text: 'Три карточки-зарисовки об одном событии рынка. Дата без года — не подглядывай!',
+  },
+  {
+    icon: <IconQuestion />,
+    title: '2 · Угадай компанию и год',
+    text: 'О какой компании речь и когда это было: +150 и +100 очков.',
+  },
+  {
+    icon: <IconClock />,
+    title: '3 · Поставь на рост или падение',
+    text: '15 секунд на ставку по графику. Чем быстрее жмёшь — тем больше бонус.',
+  },
+  {
+    icon: <IconStar />,
+    title: '4 · Лови серию',
+    text: 'Верные ставки подряд дают комбо до ×2,5. Финиш — место в лидерборде!',
+  },
+]
+
+export function TitleScreen({
+  meta,
+  bestScore,
+  gamesCount,
+  muted,
+  onToggleMute,
+  onPlay,
+  onLeaderboard,
+}: TitleScreenProps) {
+  const [howtoOpen, setHowtoOpen] = useState(false)
+  const phrase = pickAxoPhrase('idle')
+
+  return (
+    <div className="scr scr-title u-pop-in">
+      <button
+        type="button"
+        className="iconbtn"
+        data-testid="btn-sound"
+        aria-label={muted ? 'Включить звук' : 'Выключить звук'}
+        onClick={onToggleMute}
+      >
+        {muted ? <IconSoundOff /> : <IconSoundOn />}
+      </button>
+
+      <div className="title-axo">
+        <Axolotl mood="idle" size={158} animated />
+      </div>
+      <h1 className="title-logo display">Аксолотль-трейдер</h1>
+      <p className="title-sub">{meta.title}</p>
+      <p className="title-sub2">{meta.subtitle}</p>
+
+      <SpeechBubble side="left">{phrase}</SpeechBubble>
+
+      <div className="title-actions">
+        <div data-testid="btn-play">
+          <PixelButton variant="primary" size="xl" full onClick={onPlay}>
+            Играть
+          </PixelButton>
+        </div>
+        <div data-testid="btn-leaderboard">
+          <PixelButton variant="gold" size="lg" full icon={<IconTrophy />} onClick={onLeaderboard}>
+            Лидерборд
+          </PixelButton>
+        </div>
+        <div data-testid="btn-howto">
+          <PixelButton
+            variant="ghost"
+            size="lg"
+            full
+            icon={<IconQuestion />}
+            onClick={() => setHowtoOpen(true)}
+          >
+            Как играть
+          </PixelButton>
+        </div>
+      </div>
+
+      <p className="title-meta">
+        {gamesCount > 0 ? `Рекорд: ${bestScore.toLocaleString('ru-RU')} · Игр: ${gamesCount}` : 'Первая игра? Погнали!'}
+      </p>
+      <p className="title-disclaimer">Учебная игра. Не инвестиционная рекомендация</p>
+
+      <Modal open={howtoOpen} onClose={() => setHowtoOpen(false)} title="Как играть">
+        <div className="howto">
+          {HOWTO_STEPS.map((step) => (
+            <div className="howto__step" key={step.title}>
+              <span className="howto__ico">{step.icon}</span>
+              <div>
+                <h4 className="howto__title display">{step.title}</h4>
+                <p className="howto__text">{step.text}</p>
+              </div>
+            </div>
+          ))}
+          <PixelButton variant="primary" size="lg" full onClick={() => setHowtoOpen(false)}>
+            Понятно!
+          </PixelButton>
+        </div>
+      </Modal>
+    </div>
+  )
+}

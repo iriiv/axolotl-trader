@@ -1,0 +1,830 @@
+/* ═══════════════════════════════════════════════════════════════
+   UI-КИТ — стили. Правила системы:
+   • рамки 2-3px var(--outline), тени только ступенями, без blur
+   • border-radius запрещён (0 везде)
+   • тап-таргеты ≥52px, :active со сдвигом, hover не обязателен
+   • оттенки через color-mix от переменных tokens.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════ PixelButton ═══════════ */
+
+.pxbtn {
+  --btn-bg: var(--aqua);
+  --btn-ink: var(--outline);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 2px solid var(--outline);
+  border-radius: 0;
+  box-shadow: var(--shadow-2);
+  background: var(--btn-bg);
+  color: var(--btn-ink);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  cursor: pointer;
+  transition: none;
+}
+
+.pxbtn--md {
+  min-height: 52px;
+  padding: 0 18px;
+  font-size: 15px;
+}
+
+.pxbtn--lg {
+  min-height: 60px;
+  padding: 0 22px;
+  font-size: 17px;
+}
+
+.pxbtn--xl {
+  min-height: 68px;
+  padding: 0 26px;
+  font-size: 20px;
+  box-shadow: var(--shadow-3);
+  border-width: 3px;
+}
+
+.pxbtn--full {
+  width: 100%;
+}
+
+.pxbtn__icon {
+  display: inline-flex;
+}
+
+.pxbtn__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pxbtn--xl .pxbtn__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* варианты */
+.pxbtn--primary {
+  --btn-bg: var(--aqua);
+  --btn-ink: var(--outline);
+}
+
+.pxbtn--danger {
+  --btn-bg: var(--gill);
+  --btn-ink: var(--outline);
+}
+
+.pxbtn--gold {
+  --btn-bg: var(--gold);
+  --btn-ink: var(--outline);
+}
+
+.pxbtn--ghost {
+  --btn-bg: var(--panel);
+  --btn-ink: var(--ink);
+}
+
+.pxbtn--up {
+  --btn-bg: var(--up);
+  --btn-ink: var(--outline);
+}
+
+.pxbtn--down {
+  --btn-bg: var(--down);
+  --btn-ink: var(--outline);
+}
+
+/* нажатие: вдавливание в тень */
+.pxbtn:active:not(.pxbtn--disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--outline);
+}
+
+.pxbtn--xl:active:not(.pxbtn--disabled) {
+  transform: translate(4px, 4px);
+  box-shadow: 2px 2px 0 var(--outline);
+}
+
+.pxbtn--disabled {
+  filter: grayscale(0.9);
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: 2px 2px 0 var(--outline);
+}
+
+/* ═══════════ PixelCard ═══════════ */
+
+.pxcard {
+  --card-accent: var(--aqua);
+  position: relative;
+  margin-top: 10px;
+  padding: 16px 14px 14px;
+  border: 2px solid var(--outline);
+  border-radius: 0;
+  box-shadow: var(--shadow-3);
+  background:
+    linear-gradient(var(--card-accent), var(--card-accent)) left 4px top 4px / 4px 4px no-repeat,
+    linear-gradient(var(--card-accent), var(--card-accent)) right 4px top 4px / 4px 4px no-repeat,
+    linear-gradient(var(--card-accent), var(--card-accent)) left 4px bottom 4px / 4px 4px no-repeat,
+    linear-gradient(var(--card-accent), var(--card-accent)) right 4px bottom 4px / 4px 4px no-repeat,
+    var(--panel);
+}
+
+.pxcard--gold {
+  --card-accent: var(--gold);
+}
+
+.pxcard--pink {
+  --card-accent: var(--pink);
+}
+
+.pxcard--up {
+  --card-accent: var(--up);
+}
+
+.pxcard--down {
+  --card-accent: var(--down);
+}
+
+/* дизеринг-полоска сверху (шахматка 3px) */
+.pxcard::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 12px;
+  right: 12px;
+  height: 6px;
+  background-image: repeating-conic-gradient(
+    color-mix(in srgb, var(--ink) 6%, transparent) 0% 25%,
+    transparent 0% 50%
+  );
+  background-size: 3px 3px;
+  pointer-events: none;
+}
+
+/* пульсирующий акцентный контур (жёсткий, без blur) */
+.pxcard--glow {
+  animation: card-glow 1.4s steps(2, end) infinite;
+}
+
+@keyframes card-glow {
+  0%,
+  50% {
+    box-shadow: var(--shadow-3), inset 0 0 0 0 var(--card-accent);
+  }
+  51%,
+  100% {
+    box-shadow: var(--shadow-3), inset 0 0 0 3px var(--card-accent);
+  }
+}
+
+/* заголовок-плашка с «ушками» */
+.pxcard__title {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  transform: translateY(-55%);
+}
+
+.pxcard__title-text {
+  position: relative;
+  display: inline-block;
+  padding: 5px 12px;
+  border: 2px solid var(--outline);
+  background: var(--panel-2);
+  color: var(--card-accent);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-1);
+}
+
+/* ушки-квадратики по бокам плашки */
+.pxcard__title-text::before,
+.pxcard__title-text::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  background: var(--card-accent);
+  box-shadow: 2px 2px 0 var(--outline);
+}
+
+.pxcard__title-text::before {
+  left: -9px;
+  transform: translateY(-50%);
+}
+
+.pxcard__title-text::after {
+  right: -9px;
+  transform: translateY(-50%);
+}
+
+.pxcard__body {
+  margin-top: 4px;
+}
+
+/* ═══════════ OptionButton ═══════════ */
+
+.opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 68px;
+  padding: 10px 12px;
+  border: 2px solid var(--outline);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-2);
+}
+
+.opt:active:not(.opt--muted) {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--outline);
+}
+
+.opt__chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--outline);
+  background: color-mix(in srgb, var(--aqua) 16%, var(--panel));
+  color: var(--aqua-hi);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.opt__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.opt__label {
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.opt__hint {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--ink-dim);
+}
+
+/* состояния */
+.opt--selected {
+  background: var(--panel-2);
+  box-shadow: var(--shadow-2), inset 0 0 0 2px var(--aqua);
+}
+
+.opt--selected .opt__chip {
+  background: var(--aqua);
+  color: var(--outline);
+}
+
+.opt--correct {
+  animation: opt-correct 0.6s steps(2, end) 1;
+  background: color-mix(in srgb, var(--up) 34%, var(--panel));
+  box-shadow: var(--shadow-2), inset 0 0 0 3px var(--up);
+}
+
+.opt--correct .opt__chip {
+  background: var(--up);
+  color: var(--outline);
+}
+
+@keyframes opt-correct {
+  0%,
+  50% {
+    filter: brightness(1.7);
+  }
+  25%,
+  75%,
+  100% {
+    filter: none;
+  }
+}
+
+.opt--wrong {
+  animation: opt-wrong 0.45s steps(2, end) 1;
+  background: color-mix(in srgb, var(--down) 34%, var(--panel));
+  box-shadow: var(--shadow-2), inset 0 0 0 3px var(--down);
+}
+
+.opt--wrong .opt__chip {
+  background: var(--down);
+  color: var(--outline);
+}
+
+@keyframes opt-wrong {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+.opt--muted {
+  opacity: 0.42;
+  filter: saturate(0.4);
+  box-shadow: 2px 2px 0 var(--outline);
+  pointer-events: none;
+}
+
+/* ═══════════ Badge ═══════════ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border: 2px solid var(--outline);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--badge-c, var(--aqua)) 16%, var(--panel));
+  color: var(--badge-c, var(--aqua-hi));
+  box-shadow: var(--shadow-1);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge--aqua {
+  --badge-c: var(--aqua);
+}
+
+.badge--gold {
+  --badge-c: var(--gold);
+}
+
+.badge--pink {
+  --badge-c: var(--pink);
+}
+
+.badge--up {
+  --badge-c: var(--up);
+}
+
+.badge--down {
+  --badge-c: var(--down);
+}
+
+.badge--ink {
+  --badge-c: var(--ink-dim);
+}
+
+/* ═══════════ TimerBar ═══════════ */
+
+.pxtimer {
+  display: flex;
+  gap: 3px;
+  padding: 6px;
+  border: 2px solid var(--outline);
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: var(--shadow-2);
+}
+
+.pxtimer__seg {
+  flex: 1;
+  height: 16px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+}
+
+.pxtimer--hi .pxtimer__seg.is-on {
+  background: var(--aqua);
+  border-color: var(--aqua);
+}
+
+.pxtimer--mid .pxtimer__seg.is-on {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+/* на исходе: красные + мигают ступенькой */
+.pxtimer--lo .pxtimer__seg.is-on {
+  background: var(--down);
+  border-color: var(--down);
+  animation: seg-blink 0.42s steps(1, end) infinite;
+}
+
+.pxtimer--lo .pxtimer__seg.is-on:nth-child(2n) {
+  animation-delay: 0.21s;
+}
+
+@keyframes seg-blink {
+  0%,
+  60% {
+    filter: brightness(1);
+  }
+  61%,
+  100% {
+    filter: brightness(0.45);
+  }
+}
+
+/* ═══════════ SpeechBubble ═══════════ */
+
+.pxbubble {
+  position: relative;
+  margin: 4px 0 14px;
+  padding: 12px 14px;
+  border: 2px solid var(--outline);
+  border-radius: 0;
+  background: var(--panel-2);
+  box-shadow: var(--shadow-2);
+}
+
+.pxbubble__text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+/* хвостик-лесенка из ступеней; контур — drop-shadow без blur */
+.pxbubble::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  width: 12px;
+  height: 12px;
+  background: var(--panel-2);
+  clip-path: polygon(0 0, 66% 0, 66% 34%, 34% 34%, 34% 68%, 0 68%);
+  filter: drop-shadow(2px 2px 0 var(--outline));
+}
+
+.pxbubble--left::after {
+  left: 22px;
+}
+
+.pxbubble--right::after {
+  right: 22px;
+  transform: scaleX(-1);
+}
+
+/* ═══════════ ComboMeter ═══════════ */
+
+.combo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 2px solid var(--outline);
+  background: var(--panel);
+  box-shadow: var(--shadow-2);
+}
+
+.combo__flame {
+  display: inline-flex;
+  color: var(--line);
+}
+
+.combo__flame svg {
+  width: 18px;
+  height: 18px;
+}
+
+.combo__streak {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
+  font-weight: 600;
+}
+
+.combo__mult {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--ink-dim);
+  text-shadow: var(--shadow-1);
+}
+
+/* горячий стрик: огонь горит, множитель золотой */
+.combo--hot .combo__flame {
+  color: var(--gold);
+  animation: flame 0.5s steps(2, end) infinite;
+}
+
+.combo--hot .combo__streak {
+  color: var(--gold);
+}
+
+.combo--hot .combo__mult {
+  color: var(--gold);
+}
+
+@keyframes flame {
+  0%,
+  50% {
+    transform: scale(1);
+  }
+  51%,
+  100% {
+    transform: scale(1.18) rotate(6deg);
+  }
+}
+
+/* ═══════════ HeartsBar ═══════════ */
+
+.hearts {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.hearts__h {
+  display: inline-flex;
+  color: var(--line);
+}
+
+.hearts__h svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hearts__h.is-on {
+  color: var(--gill);
+  filter: drop-shadow(2px 2px 0 var(--outline));
+}
+
+/* ═══════════ ScoreCounter ═══════════ */
+
+.score {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--gold);
+  text-shadow: var(--shadow-2);
+}
+
+.score__digit {
+  display: inline-block;
+  font-size: 34px;
+  line-height: 1;
+  animation: digit-pop 0.3s steps(3, end) 1;
+}
+
+.score__gap {
+  width: 8px;
+}
+
+@keyframes digit-pop {
+  0% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-7px) scale(1.14);
+  }
+  70% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════ Modal ═══════════ */
+
+.pxmodal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: color-mix(in srgb, var(--outline) 72%, transparent);
+}
+
+.pxmodal {
+  width: 100%;
+  max-width: 520px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  border: 3px solid var(--outline);
+  border-bottom: none;
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: -5px -5px 0 var(--outline);
+  animation: sheet-up 0.28s steps(5, end) 1;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.pxmodal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 12px 16px;
+  border-bottom: 2px solid var(--line);
+  background:
+    linear-gradient(var(--aqua), var(--aqua)) left 8px top 50% / 4px 22px no-repeat,
+    var(--panel-2);
+}
+
+.pxmodal__title {
+  font-size: 19px;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-left: 10px;
+}
+
+.pxmodal__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 2px solid var(--outline);
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+}
+
+.pxmodal__close:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.pxmodal__close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pxmodal__body {
+  padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+
+/* ═══════════ ProgressBar ═══════════ */
+
+.pxprog {
+  --prog-c: var(--aqua);
+  display: flex;
+  gap: 3px;
+  padding: 5px;
+  border: 2px solid var(--outline);
+  background: var(--panel);
+  box-shadow: var(--shadow-1);
+}
+
+.pxprog__seg {
+  flex: 1;
+  height: 12px;
+  background: var(--panel-2);
+}
+
+.pxprog__seg.is-on {
+  background: var(--prog-c);
+}
+
+.pxprog--gold {
+  --prog-c: var(--gold);
+}
+
+.pxprog--pink {
+  --prog-c: var(--pink);
+}
+
+.pxprog--up {
+  --prog-c: var(--up);
+}
+
+.pxprog--down {
+  --prog-c: var(--down);
+}
+
+/* ═══════════ Divider / Chip / StatRow ═══════════ */
+
+.pxdiv {
+  height: 3px;
+  margin: 14px 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--line) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border: 2px solid var(--outline);
+  background: color-mix(in srgb, var(--chip-c, var(--aqua)) 13%, var(--panel));
+  color: var(--chip-c, var(--aqua-hi));
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.chip--aqua {
+  --chip-c: var(--aqua);
+}
+
+.chip--gold {
+  --chip-c: var(--gold);
+}
+
+.chip--pink {
+  --chip-c: var(--pink);
+}
+
+.chip--up {
+  --chip-c: var(--up);
+}
+
+.chip--down {
+  --chip-c: var(--down);
+}
+
+.chip--ink {
+  --chip-c: var(--ink-dim);
+}
+
+.statrow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+}
+
+.statrow__label {
+  font-size: 13.5px;
+  color: var(--ink-dim);
+}
+
+.statrow__lead {
+  flex: 1;
+  border-bottom: 2px dotted var(--line);
+  transform: translateY(-4px);
+}
+
+.statrow__value {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  text-shadow: var(--shadow-1);
+}
+
+.statrow__value--gold {
+  color: var(--gold);
+}
+
+.statrow__value--up {
+  color: var(--up);
+}
+
+.statrow__value--down {
+  color: var(--down);
+}
+
+.statrow__value--aqua {
+  color: var(--aqua-hi);
+}
+
+.statrow__value--ink {
+  color: var(--ink);
+}

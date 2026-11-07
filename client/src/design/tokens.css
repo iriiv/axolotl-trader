@@ -1,0 +1,261 @@
+/* ═══════════════════════════════════════════════════════════════
+   АКСОЛОТЛЬ-ТРЕЙДЕР · дизайн-токены «Пиксельный ночной океан»
+   Единственное место с палитрой. Всё остальное — var() и color-mix().
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── палитра ── */
+  --bg-deep: #081020;
+  --bg: #0d1b2e;
+  --panel: #16263e;
+  --panel-2: #1c3050;
+  --line: #2c4667;
+
+  --ink: #eaf6ff;
+  --ink-dim: #8fb3d9;
+
+  --aqua: #4ce0c3;
+  --aqua-hi: #6ff2dc;
+
+  --pink: #ffa7c9;
+  --pink-deep: #e26a9a;
+  --gill: #ff5f8f;
+
+  --gold: #ffd23e;
+
+  --up: #43e97b;
+  --up-deep: #1f9d55;
+  --down: #ff5f7a;
+  --down-deep: #c22b4e;
+
+  --outline: #071018; /* почти чёрный пиксельный контур */
+
+  /* ── шрифты ── */
+  --font-display: 'Pixelify Sans', 'Golos Text', monospace;
+  --font-text: 'Golos Text', 'Pixelify Sans', monospace;
+
+  /* ── ступенчатые тени (жёсткие, без размытия) ── */
+  --shadow-1: 2px 2px 0 var(--outline);
+  --shadow-2: 4px 4px 0 var(--outline);
+  --shadow-3: 6px 6px 0 var(--outline);
+}
+
+/* ── сброс ── */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 15px;
+  line-height: 1.45;
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 88%, var(--bg-deep) 100%)
+    fixed no-repeat var(--bg-deep);
+  user-select: none;
+  -webkit-user-select: none;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+img,
+svg {
+  display: block;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+p,
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+}
+
+/* ── каркас приложения: safe-area + колонка телефона ── */
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: calc(10px + env(safe-area-inset-top)) 14px
+    calc(28px + env(safe-area-inset-bottom));
+}
+
+/* ═══════════ ОКЕАН: пиксель-пузырьки (pure CSS, два слоя параллакса) ═══════════
+   Трюк: фиксированный «пиксель» с набором box-shadow-точек, продублированным
+   со сдвигом +110vh; анимация translateY(-110vh) даёт бесшовный цикл всплытия. */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  bottom: -6px;
+  width: 3px;
+  height: 3px;
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* дальние пузырьки — мелкие, тусклые, очень ленивые */
+body::before {
+  box-shadow:
+    7vw 8vh 0 0 color-mix(in srgb, var(--aqua) 13%, transparent),
+    22vw 22vh 0 0 color-mix(in srgb, var(--ink) 7%, transparent),
+    41vw 5vh 0 0 color-mix(in srgb, var(--aqua) 10%, transparent),
+    58vw 30vh 0 0 color-mix(in srgb, var(--aqua) 14%, transparent),
+    73vw 12vh 0 0 color-mix(in srgb, var(--ink) 8%, transparent),
+    88vw 26vh 0 0 color-mix(in srgb, var(--aqua) 11%, transparent),
+    12vw 48vh 0 0 color-mix(in srgb, var(--aqua) 9%, transparent),
+    35vw 66vh 0 0 color-mix(in srgb, var(--ink) 6%, transparent),
+    64vw 55vh 0 0 color-mix(in srgb, var(--aqua) 12%, transparent),
+    93vw 70vh 0 0 color-mix(in srgb, var(--aqua) 8%, transparent),
+    7vw 8vh 0 0 color-mix(in srgb, var(--aqua) 13%, transparent),
+    22vw 22vh 0 0 color-mix(in srgb, var(--ink) 7%, transparent),
+    41vw 5vh 0 0 color-mix(in srgb, var(--aqua) 10%, transparent),
+    58vw 30vh 0 0 color-mix(in srgb, var(--aqua) 14%, transparent),
+    73vw 12vh 0 0 color-mix(in srgb, var(--ink) 8%, transparent),
+    88vw 26vh 0 0 color-mix(in srgb, var(--aqua) 11%, transparent),
+    12vw 48vh 0 0 color-mix(in srgb, var(--aqua) 9%, transparent),
+    35vw 66vh 0 0 color-mix(in srgb, var(--ink) 6%, transparent),
+    64vw 55vh 0 0 color-mix(in srgb, var(--aqua) 12%, transparent),
+    93vw 70vh 0 0 color-mix(in srgb, var(--aqua) 8%, transparent);
+  animation: ocean-rise 52s linear infinite;
+}
+
+/* ближние пузырьки — крупнее, ярче, чуть ступенчато (ретро-флоат) */
+body::after {
+  width: 4px;
+  height: 4px;
+  box-shadow:
+    16vw 14vh 0 0 color-mix(in srgb, var(--aqua) 26%, transparent),
+    49vw 38vh 0 0 color-mix(in srgb, var(--aqua-hi) 22%, transparent),
+    78vw 8vh 0 0 color-mix(in srgb, var(--aqua) 24%, transparent),
+    30vw 78vh 0 0 color-mix(in srgb, var(--aqua-hi) 18%, transparent),
+    86vw 60vh 0 0 color-mix(in srgb, var(--aqua) 21%, transparent),
+    16vw 14vh 0 0 color-mix(in srgb, var(--aqua) 26%, transparent),
+    49vw 38vh 0 0 color-mix(in srgb, var(--aqua-hi) 22%, transparent),
+    78vw 8vh 0 0 color-mix(in srgb, var(--aqua) 24%, transparent),
+    30vw 78vh 0 0 color-mix(in srgb, var(--aqua-hi) 18%, transparent),
+    86vw 60vh 0 0 color-mix(in srgb, var(--aqua) 21%, transparent);
+  animation: ocean-rise 31s steps(220, end) infinite;
+}
+
+@keyframes ocean-rise {
+  to {
+    transform: translateY(-110vh);
+  }
+}
+
+/* ═══════════ СКАНЛАЙНЫ: CRT-наложение поверх всего интерфейса ═══════════ */
+#root::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    var(--outline) 0 1px,
+    transparent 1px 3px
+  );
+  opacity: 0.06;
+}
+
+/* ═══════════ утилиты ═══════════ */
+
+/* дисплейный шрифт с жёсткой пиксельной тенью */
+.display {
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+  text-shadow: var(--shadow-1);
+}
+
+/* пиксельный дизеринг-шахматкой (передать цвет через --dither-color) */
+.u-dither {
+  background-image: repeating-conic-gradient(
+    var(--dither-color, color-mix(in srgb, var(--ink) 5%, transparent)) 0% 25%,
+    transparent 0% 50%
+  );
+  background-size: 4px 4px;
+}
+
+/* вступительная анимация «pop-in» — ступенчатая */
+.u-pop-in {
+  animation: pop-in 0.34s steps(3, end) both;
+}
+
+@keyframes pop-in {
+  from {
+    transform: scale(0.6) translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* тряска при ошибке */
+.u-shake {
+  animation: shake-x 0.4s steps(2, end) 1;
+}
+
+@keyframes shake-x {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+}
+
+/* мигание-вспышка цветом (flash при ревиле) */
+.u-flash {
+  animation: hard-flash 0.5s steps(2, end) 1;
+}
+
+@keyframes hard-flash {
+  0%,
+  50% {
+    filter: brightness(1.9) saturate(1.4);
+  }
+  25%,
+  75%,
+  100% {
+    filter: none;
+  }
+}
+
+/* уважение к настройкам системы */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
