@@ -24,6 +24,10 @@
 
 ## Запуск
 
+> 🌐 **Играть сейчас (телефон/десктоп):** https://iriiv.github.io/axolotl-trader/
+> 📊 Презентация проекта: https://iriiv.github.io/axolotl-trader/presentation.html
+> 🖼 Скриншоты этапов разработки: `docs/screenshots/`
+
 ```bash
 # данные МосБиржи уже в server/data (2019→2026). Обновить: npm run fetch:moex
 cd server && npm install && cd ..
@@ -32,6 +36,7 @@ npm run dev        # API :4000 + UI :5173 (vite proxy)
 ```
 
 Прод-сборка: `npm run build && npm start` → Express раздаёт client/dist на :4000.
+Деплой на GitHub Pages — автоматически при пуше в main (`.github/workflows/pages.yml`).
 
 ## Архитектура
 

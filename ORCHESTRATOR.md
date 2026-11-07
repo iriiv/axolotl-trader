@@ -23,10 +23,10 @@ React (Vite) фронт под WebView/тач + Express + SQLite бек + лид
 3. **W3**: 🧪 Тестировщик (после интеграции)
 4. **W4**: оркестратор — полировка визуала, README
 
-Статус: 🎨 done → ⚙️ done → 💻 в работе → 🧪 следующим → ✅ после интеграции
+Статус: 🎨 done → ⚙️ done → 💻 done → 🧪 в работе → ✅ первый деплой уже живой
 
-> Деплой: GitHub Pages (legacy, ветка `gh-pages`), CI собирает клиент и пушит в ветку.
-> Презентация проекта: https://iriiv.github.io/axolotl-trader/presentation.html (ROADMAP.md — план «MVP → продукт»)
+> Деплой: https://iriiv.github.io/axolotl-trader/ (CI собирает клиент и пушит в ветку `gh-pages`)
+> Презентация: https://iriiv.github.io/axolotl-trader/presentation.html · План «MVP → продукт»: ROADMAP.md
 
 ## Контент игры (5 раундов)
 
