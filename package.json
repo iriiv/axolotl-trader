@@ -6,10 +6,15 @@
   "scripts": {
     "fetch:moex": "node server/scripts/fetch-moex.mjs",
     "analyze:moex": "node server/scripts/analyze.mjs",
+    "export:static": "node server/scripts/export-static.mjs",
     "dev": "node scripts/dev.mjs",
     "server": "npm --prefix server run dev",
     "client": "npm --prefix client run dev",
     "build": "npm --prefix client run build",
-    "start": "npm --prefix server start"
+    "start": "npm --prefix server start",
+    "shot": "node scripts/screenshot.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.2"
   }
 }
