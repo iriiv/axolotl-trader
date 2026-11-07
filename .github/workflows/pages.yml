@@ -1,0 +1,44 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Build client (статические данные игры уже в репо)
+        run: |
+          npm --prefix client ci
+          npm --prefix client run build
+          test -f client/dist/index.html
+
+      - name: Deploy to gh-pages branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages --depth=1 || true
+          git checkout -B gh-pages origin/gh-pages 2>/dev/null || git checkout --orphan gh-pages
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -r client/dist/. .
+          cp presentation/presentation.html presentation.html
+          git add -A
+          git commit -m "deploy: ${GITHUB_SHA::7} $(date -u +%Y-%m-%dT%H:%MZ)" || echo "нет изменений — пропускаю"
+          git push origin gh-pages
