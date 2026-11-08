@@ -61,7 +61,9 @@ export function pickBetPhrase(): string {
   return BET_PHRASES[Math.floor(Math.random() * BET_PHRASES.length)] ?? ''
 }
 
-/** Вердикт на экране итогов по доле верных направлений */
+/** Вердикт на экране итогов по доле верных направлений.
+    Пороги относительные: топ ≈ 70% верных, середина ≈ половина.
+    При 5 раундах это те же ≥4 и ≥2, что и раньше. */
 export interface SummaryVerdict {
   mood: AxolotlMood
   title: string
@@ -69,7 +71,7 @@ export interface SummaryVerdict {
 }
 
 export function summaryVerdict(directionsCorrect: number, roundsTotal: number): SummaryVerdict {
-  if (directionsCorrect >= 4) {
+  if (roundsTotal > 0 && directionsCorrect >= Math.ceil(roundsTotal * 0.7)) {
     return {
       mood: 'cheer',
       title: 'Ты чуешь рынок!',

@@ -2,8 +2,8 @@
 /* ═══════════════════════════════════════════════════════════════
    Скриншоты игрового флоу «Аксолотль-трейдер» (iPhone 13, 390×844).
    Сценарий: title → ник «ТЕСТЕР» → интро → 3 новости → квиз
-   компания/год → ставка «ВНИЗ» → ревил → … × 5 раундов → итоги →
-   лидерборд. Сохраняет 9 файлов в docs/screenshots/.
+   компания/год → ставка «ВНИЗ» → ревил → … × всех раундов → итоги
+   (+ кнопка шеринга) → лидерборд. Сохраняет файлы в docs/screenshots/.
 
    Запуск из корня проекта:
      node scripts/shots-game.mjs [--base http://localhost:5173]
@@ -19,6 +19,12 @@ import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = path.join(root, 'docs', 'screenshots')
+
+/* число раундов берём из данных — скрипт не знает о балансе игры */
+const gameJson = JSON.parse(
+  fs.readFileSync(path.join(root, 'client', 'src', 'static', 'game.json'), 'utf8'),
+)
+const ROUNDS = Array.isArray(gameJson.rounds) ? gameJson.rounds.length : 10
 
 const args = process.argv.slice(2)
 const baseArgIdx = args.indexOf('--base')
@@ -92,8 +98,7 @@ try {
   await shot('04-nick')
   await click('btn-nick-next')
 
-  /* раунды 1..5 */
-  const ROUNDS = 5
+  /* раунды 1..N (по данным game.json) */
   for (let r = 1; r <= ROUNDS; r++) {
     // интро раунда
     await sleep(800)
@@ -132,6 +137,11 @@ try {
   /* итоги */
   await sleep(900)
   await shot('10-summary', { full: true })
+
+  /* саммари + кнопка шеринга (внизу экрана, рядом с лидербордом) */
+  await page.locator('[data-testid="btn-share"]').scrollIntoViewIfNeeded()
+  await sleep(400)
+  await shot('15-summary-share')
   await click('btn-send-score')
 
   /* лидерборд */

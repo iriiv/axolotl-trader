@@ -1,7 +1,10 @@
-/* SummaryScreen: вердикт аксолотля + статистика игры + отправка в лидерборд */
+/* SummaryScreen: вердикт аксолотля + статистика игры + отправка в
+   лидерборд + шеринг результата (navigator.share → clipboard). */
 
+import { useEffect, useRef, useState } from 'react'
 import { Axolotl } from '../design/axolotl'
 import { Badge, Divider, PixelButton, PixelCard, SpeechBubble, StatRow } from '../design/ui'
+import { sfx } from '../design/sfx'
 import { summarize } from '../game/engine'
 import { summaryVerdict } from '../game/phrases'
 import type { RoundAnswer } from '../game/types'
@@ -16,6 +19,13 @@ export interface SummaryScreenProps {
   onSubmit: () => void
 }
 
+const SHARE_TITLE = 'Аксолотль-трейдер'
+
+/** пользователь отменил системный шитор — это не ошибка */
+function isAbortShare(err: unknown): boolean {
+  return err instanceof DOMException && (err.name === 'AbortError' || err.name === 'NotAllowedError')
+}
+
 export function SummaryScreen({
   nick,
   score,
@@ -28,6 +38,43 @@ export function SummaryScreen({
   const stats = summarize(log, roundsTotal)
   const verdict = summaryVerdict(stats.directionsCorrect, roundsTotal)
 
+  /* фидбек «Ссылка скопирована» в пузыре аксолотля на 2 секунды */
+  const [copied, setCopied] = useState(false)
+  const copiedTimer = useRef<number | null>(null)
+  useEffect(() => {
+    return () => {
+      if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current)
+    }
+  }, [])
+
+  const shareText = `Я набрал ${score.toLocaleString('ru-RU')} очков в Биржевых хрониках 🦎 Угадаешь рынок лучше?`
+
+  const showCopied = () => {
+    setCopied(true)
+    sfx.pop()
+    if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current)
+    copiedTimer.current = window.setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleShare = async () => {
+    const url = window.location.href
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: SHARE_TITLE, text: shareText, url })
+        return
+      } catch (err) {
+        if (isAbortShare(err)) return // закрыл шитор — тишина, не ошибка
+        // прочие сбои шера — пробуем буфер обмена
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${shareText} ${url}`)
+      showCopied()
+    } catch {
+      /* буфер недоступен (нет https/прав) — молча: это не ломает игру */
+    }
+  }
+
   return (
     <div className="scr u-pop-in">
       <div className="sum-head">
@@ -38,9 +85,15 @@ export function SummaryScreen({
       <div className="sum-axo">
         <Axolotl mood={verdict.mood} size={124} animated />
         <SpeechBubble side="left">
-          <strong className="sum-verdict">{verdict.title}</strong>
-          <br />
-          {verdict.phrase}
+          {copied ? (
+            <strong className="sum-verdict">Ссылка скопирована</strong>
+          ) : (
+            <>
+              <strong className="sum-verdict">{verdict.title}</strong>
+              <br />
+              {verdict.phrase}
+            </>
+          )}
         </SpeechBubble>
       </div>
 
@@ -68,6 +121,11 @@ export function SummaryScreen({
           onClick={onSubmit}
         >
           {submitted ? 'Отправлено ✓' : submitting ? 'Отправляем…' : 'Отправить в лидерборд'}
+        </PixelButton>
+      </div>
+      <div className="sum-share" data-testid="btn-share">
+        <PixelButton variant="ghost" size="lg" full onClick={() => void handleShare()}>
+          ↗ Поделиться
         </PixelButton>
       </div>
     </div>

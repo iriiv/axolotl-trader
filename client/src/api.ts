@@ -78,12 +78,13 @@ function mapRound(v: unknown): Round | null {
   }
 }
 
-function mapSeed(v: unknown): ScoreSeed {
+/** fallback числа раундов берём из game.roundsCount, а не из воздуха */
+function mapSeed(v: unknown, roundsFallback: number): ScoreSeed {
   const r = asRec(v)
   return {
     player: str(r.player, 'Аноним'),
     score: num(r.score),
-    roundsTotal: num(r.roundsTotal, 5),
+    roundsTotal: num(r.roundsTotal, roundsFallback),
     directionsCorrect: num(r.directionsCorrect),
     bestStreak: num(r.bestStreak),
     createdAt: str(r.createdAt),
@@ -97,7 +98,7 @@ function mapScoreEntry(v: unknown): Score | null {
     id: num(r.id),
     player: str(r.player),
     score: num(r.score),
-    roundsTotal: num(r.roundsTotal, 5),
+    roundsTotal: num(r.roundsTotal, gameData.game.roundsCount),
     directionsCorrect: num(r.directionsCorrect),
     bestStreak: num(r.bestStreak),
     createdAt: str(r.createdAt),
@@ -111,12 +112,13 @@ function mapGame(raw: unknown): GameData {
     .map(mapRound)
     .filter((r): r is Round => r !== null)
     .sort((a, b) => a.order - b.order)
+  const roundsCount = num(g.roundsCount, rounds.length)
   return {
     version: num(root.version, 1),
     game: {
       title: str(g.title, 'Биржевые хроники'),
       subtitle: str(g.subtitle),
-      roundsCount: num(g.roundsCount, rounds.length),
+      roundsCount,
       betSeconds: num(g.betSeconds, 15),
       points: {
         company: num(asRec(g.points).company, 150),
@@ -130,7 +132,9 @@ function mapGame(raw: unknown): GameData {
       }),
     },
     rounds,
-    seedScores: (Array.isArray(root.seedScores) ? root.seedScores : []).map(mapSeed),
+    seedScores: (Array.isArray(root.seedScores) ? root.seedScores : []).map((s) =>
+      mapSeed(s, roundsCount),
+    ),
   }
 }
 

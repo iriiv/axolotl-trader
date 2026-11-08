@@ -447,6 +447,16 @@
   color: var(--gold);
 }
 
+/* мин/макс внутри окна ревила (мелкие бейджи под основным movePct) */
+.reveal-extremes {
+  padding: 4px 2px 0;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--ink-dim);
+  text-align: center;
+}
+
 .reveal-summary {
   font-weight: 600;
   font-size: 14.5px;
@@ -546,6 +556,10 @@
 .sum-verdict {
   font-family: var(--font-display);
   color: var(--gold);
+}
+
+.sum-share {
+  margin-top: 12px;
 }
 
 /* ── лидерборд ── */

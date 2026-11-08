@@ -1,4 +1,4 @@
-/* Прогресс-шапка игровых экранов: РАУНД N/5 · очки · комбо (при серии ≥2) */
+/* Прогресс-шапка игровых экранов: РАУНД N/total · очки · комбо (при серии ≥2) */
 
 import { AxolotlCoin } from '../design/axolotl'
 import { Badge, ComboMeter, ScoreCounter } from '../design/ui'

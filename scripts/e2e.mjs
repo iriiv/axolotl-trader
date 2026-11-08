@@ -3,7 +3,7 @@
 
    Сценарии (каждый — свежий контекст, чистый localStorage):
      1 «отличник»  — все квизы верно, все ставки верны → математика
-                     очков, summary 5/5/5/5, сабмит, лидерборд
+                     очков, summary N/N по всем строкам, сабмит, лидерборд
      2 «новичок»   — всё неверно → счёт 0, «Ты думал: …», sad-итог
      3 «тарапун»   — раунд 1: таймаут ставки (15с) → пропуск, 0 очков;
                      раунд 2: верная ставка → серия сломана, ×1
@@ -198,6 +198,16 @@ async function playRound(page, scenario, round, roundNo, opts, extra = {}) {
   return { pts, score }
 }
 
+/** уйти с ревила: первый тап может достраивать анимацию (1,4с),
+    поэтому кликаем, пока экран ревила не сменится (макс. 2 попытки) */
+async function revealNext(page) {
+  for (let i = 0; i < 2; i++) {
+    await page.locator('[data-testid="btn-reveal-next"] button').click()
+    await page.waitForTimeout(300)
+    if ((await page.locator('[data-testid="btn-reveal-next"]').count()) === 0) return
+  }
+}
+
 /* ═══════════════════ СЦЕНАРИЙ 1 «отличник» ═══════════════════ */
 async function scenario1(browser) {
   const scenario = 'S1 отличник'
@@ -239,7 +249,7 @@ async function scenario1(browser) {
     prevScore = score
     perRound.push(pts)
 
-    await page.locator('[data-testid="btn-reveal-next"] button').click()
+    await revealNext(page)
   }
 
   // ── summary ──
@@ -253,15 +263,18 @@ async function scenario1(browser) {
   )
   check(scenario, 'итоговый счёт = сумма раундов', scoreShown === expectedTotal, `на экране ${scoreShown}, расчёт ${expectedTotal}`)
   check(scenario, 'очки на summary совпадают с расчётом', scoreShown === expectedTotal, `на экране ${scoreShown}, расчёт ${expectedTotal}`)
-  check(scenario, 'summary: компании 5/5', sumText.includes('Компании✓5/5'), '')
-  check(scenario, 'summary: годы 5/5', sumText.includes('Годы✓5/5'), '')
-  check(scenario, 'summary: направления 5/5', sumText.includes('Направления✓5/5'), '')
-  check(scenario, 'summary: серия 5 подряд', sumText.includes('Лучшаясерия5подряд'), '')
+  const N = rounds.length
+  check(scenario, `summary: компании ${N}/${N}`, sumText.includes(`Компании✓${N}/${N}`), '')
+  check(scenario, `summary: годы ${N}/${N}`, sumText.includes(`Годы✓${N}/${N}`), '')
+  check(scenario, `summary: направления ${N}/${N}`, sumText.includes(`Направления✓${N}/${N}`), '')
+  check(scenario, `summary: серия ${N} подряд`, sumText.includes(`Лучшаясерия${N}подряд`), '')
   // диапазон по формуле из ТЗ (timeLeftRatio неизвестен точно):
-  // 1250 (квизы) + Σ (250..350) × множитель стрика ПОСЛЕ раунда [1, 1.2, 1.5, 2, 2.5]
-  const multSum = 1 + meta.comboSteps.reduce((a, s) => a + s.mult, 0) // ×1 (r1) + ступени
-  const lo = 1250 + meta.points.direction * multSum
-  const hi = 1250 + (meta.points.direction + meta.points.speedMax) * multSum
+  // квизы (N × 250) + Σ (250..350) × множитель стрика ПОСЛЕ раунда
+  // (r1 = ×1, дальше по ступеням comboSteps с капом на максимуме)
+  const quizBase = N * (meta.points.company + meta.points.year)
+  const multSum = rounds.reduce((a, _, i) => a + comboMult(i + 1), 0)
+  const lo = quizBase + meta.points.direction * multSum
+  const hi = quizBase + (meta.points.direction + meta.points.speedMax) * multSum
   check(scenario, `счёт в теоретическом диапазоне [${lo};${hi}]`, scoreShown >= lo && scoreShown <= hi, `${scoreShown}`)
 
   // ── сабмит + лидерборд ──
@@ -308,7 +321,7 @@ async function scenario2(browser) {
       )
       await shot(page, 'e2e-s2-reveal-r1.png')
     }
-    await page.locator('[data-testid="btn-reveal-next"] button').click()
+    await revealNext(page)
   }
 
   // ── summary: грустный аксолотль ──
@@ -318,7 +331,7 @@ async function scenario2(browser) {
   check(scenario, 'summary: аксолотль sad', sad === 1, `axo--sad=${sad}`)
   const sumText = norm(await page.locator('body').innerText())
   check(scenario, 'summary: счёт 0', sumText.includes('Очки0'), '')
-  check(scenario, 'summary: направления 0/5', sumText.includes('Направления✓0/5'), '')
+  check(scenario, `summary: направления 0/${rounds.length}`, sumText.includes(`Направления✓0/${rounds.length}`), '')
   check(scenario, 'summary: серия 0 подряд', sumText.includes('Лучшаясерия0подряд'), '')
   await shot(page, 'e2e-s2-summary.png')
 
@@ -355,7 +368,7 @@ async function scenario3(browser) {
   check(scenario, 'r1 (таймаут): итого = 250', res1.pts.total === 250, `${res1.pts.total}`)
   const reveal1 = norm(await page.locator('body').innerText())
   check(scenario, 'r1 (таймаут): пометка пропуска на ревиле', reveal1.includes('Ставка(пропущена)'), '')
-  await page.locator('[data-testid="btn-reveal-next"] button').click()
+  await revealNext(page)
 
   // ── раунд 2: квизы верно + верная ставка → серия сломана, началась заново (×1) ──
   const r2 = rounds[1]
@@ -377,18 +390,29 @@ async function scenario3(browser) {
     res2.score === 250 + 250 + res2.pts.dir,
     `${res2.score}`,
   )
-  await page.locator('[data-testid="btn-reveal-next"] button').click()
+  await revealNext(page)
 
   // ── остальные раунды: верно (для завершения игры) ──
   for (let i = 2; i < rounds.length; i++) {
     await playRound(page, scenario, rounds[i], i + 1, { company: 'right', year: 'right', bet: 'right' })
-    await page.locator('[data-testid="btn-reveal-next"] button').click()
+    await revealNext(page)
   }
 
   await page.locator('[data-testid="btn-send-score"] button').waitFor()
   const sumText = norm(await page.locator('body').innerText())
-  check(scenario, 'итог: направления 4/5 (1 пропуск)', sumText.includes('Направления✓4/5'), '')
-  check(scenario, 'итог: лучшая серия 4 подряд (r2–r5)', sumText.includes('Лучшаясерия4подряд'), '')
+  const N3 = rounds.length
+  check(
+    scenario,
+    `итог: направления ${N3 - 1}/${N3} (1 пропуск)`,
+    sumText.includes(`Направления✓${N3 - 1}/${N3}`),
+    '',
+  )
+  check(
+    scenario,
+    `итог: лучшая серия ${N3 - 1} подряд (r2–r${N3})`,
+    sumText.includes(`Лучшаясерия${N3 - 1}подряд`),
+    '',
+  )
 
   check(scenario, 'нет pageerror/console.error за игру', errors.length === 0, errors.slice(0, 5).join(' | '))
   await ctx.close()
@@ -407,7 +431,7 @@ async function scenario4(browser) {
 
   for (let i = 0; i < rounds.length; i++) {
     await playRound(page, scenario, rounds[i], i + 1, { company: 'right', year: 'right', bet: 'right' })
-    await page.locator('[data-testid="btn-reveal-next"] button').click()
+    await revealNext(page)
   }
 
   // ── сабмит в офлайне ──
