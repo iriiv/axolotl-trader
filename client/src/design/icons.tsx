@@ -20,6 +20,7 @@ export type IconName =
   | 'clock'
   | 'heart'
   | 'close'
+  | 'tv'
 
 const GLYPHS: Record<IconName, string[]> = {
   arrowUp: [
@@ -204,6 +205,20 @@ const GLYPHS: Record<IconName, string[]> = {
     '............',
     '............',
   ],
+  tv: [
+    '............',
+    '.....##.....',
+    '.....##.....',
+    '.##########.',
+    '.#........#.',
+    '.#..#####.#.',
+    '.#..#...#.#.',
+    '.#..#####.#.',
+    '.#........#.',
+    '.##########.',
+    '............',
+    '............',
+  ],
 }
 
 export interface PixelIconProps {
@@ -254,6 +269,7 @@ export const IconStar = makeIcon('star')
 export const IconClock = makeIcon('clock')
 export const IconHeart = makeIcon('heart')
 export const IconClose = makeIcon('close')
+export const IconTv = makeIcon('tv')
 
 /** Универсальный доступ по имени: <PixelIcon name="coin" size={20}/> */
 export function PixelIcon({ name, ...rest }: PixelIconProps & { name: IconName }) {

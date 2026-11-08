@@ -1,7 +1,10 @@
 /* Экран новостей: карточки открываются по одной (кнопкой «Далее»),
-   прошедшие остаются сверху компактнее. sfx.pop на каждую новую. */
+   прошедшие остаются сверху компактнее. sfx.pop на каждую новую.
+   Карточки появляются пружинистым stagger-каскадом (framer-motion). */
 
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import type { Transition } from 'framer-motion'
 import { Badge, Chip, PixelButton, PixelCard, ProgressBar } from '../design/ui'
 import { sfx } from '../design/sfx'
 import { GameHeader } from './GameHeader'
@@ -18,6 +21,13 @@ export interface NewsScreenProps {
 }
 
 const ACCENTS = ['gold', 'pink', 'aqua'] as const
+
+/** пружинистое появление карточки с overshoot */
+const cardPop = {
+  initial: { opacity: 0, y: 18, scale: 0.92 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  transition: { type: 'spring', stiffness: 360, damping: 26 } as Transition,
+}
 
 export function NewsScreen({
   round,
@@ -43,7 +53,7 @@ export function NewsScreen({
   const allOpened = opened >= total
 
   return (
-    <div className="scr u-pop-in">
+    <div className="scr">
       <GameHeader
         roundNo={roundNo}
         roundsTotal={roundsTotal}
@@ -58,20 +68,24 @@ export function NewsScreen({
       </div>
       <ProgressBar value={total === 0 ? 1 : opened / total} color="pink" segments={9} />
 
-      {round.news.slice(0, opened).map((item, i) => (
-        <div key={`${round.id}-news-${i}`} className="u-pop-in">
-          <PixelCard accent={ACCENTS[i % ACCENTS.length]} className={`news-card ${i < opened - 1 ? 'is-old' : ''}`}>
-            <div className="news-card__head">
-              <Badge color="ink">{item.date}</Badge>
-              <Chip color={ACCENTS[i % ACCENTS.length]}>{item.tag}</Chip>
-            </div>
-            <p className="news-card__text">{item.text}</p>
-          </PixelCard>
-        </div>
-      ))}
+      <div className="scr-main">
+        {round.news.slice(0, opened).map((item, i) => (
+          <motion.div key={`${round.id}-news-${i}`} {...cardPop}>
+            <PixelCard
+              accent={ACCENTS[i % ACCENTS.length]}
+              className={`news-card ${i < opened - 1 ? 'is-old' : ''}`}
+            >
+              <div className="news-card__head">
+                <Badge color="ink">{item.date}</Badge>
+                <Chip color={ACCENTS[i % ACCENTS.length]}>{item.tag}</Chip>
+              </div>
+              <p className="news-card__text">{item.text}</p>
+            </PixelCard>
+          </motion.div>
+        ))}
+      </div>
 
-      <div className="scr-spacer" />
-      <div data-testid="btn-news-next">
+      <div className="scr-foot" data-testid="btn-news-next">
         <PixelButton
           variant={allOpened ? 'primary' : 'gold'}
           size="xl"

@@ -55,12 +55,34 @@ function watchErrors(page, sink) {
   })
 }
 
+/* noscroll: документ не должен расти вертикально — игра всегда
+   занимает ровно высоту экрана (внутренние списки скроллятся сами) */
+async function vScrollOk(page, scenario, where) {
+  const { sh, ih } = await page.evaluate(() => ({
+    sh: document.scrollingElement ? document.scrollingElement.scrollHeight : document.documentElement.scrollHeight,
+    ih: window.innerHeight,
+  }))
+  return check(
+    scenario,
+    `noscroll @${where}`,
+    sh <= ih + 1,
+    `scrollHeight=${sh} innerHeight=${ih}`,
+  )
+}
+
 async function hScrollOk(page, scenario, where) {
   const { sw, iw } = await page.evaluate(() => ({
     sw: document.scrollingElement ? document.scrollingElement.scrollWidth : document.documentElement.scrollWidth,
     iw: window.innerWidth,
   }))
-  return check(scenario, `нет горизонтального скролла @${where}`, sw <= iw, `scrollWidth=${sw} innerWidth=${iw}`)
+  const hOk = check(
+    scenario,
+    `нет горизонтального скролла @${where}`,
+    sw <= iw,
+    `scrollWidth=${sw} innerWidth=${iw}`,
+  )
+  const vOk = await vScrollOk(page, scenario, where)
+  return hOk && vOk
 }
 
 async function shot(page, name) {

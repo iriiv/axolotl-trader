@@ -190,7 +190,7 @@ export function PriceChart({
     }
     const finalUp = closes[n - 1] >= closes[di]
     const revealColor = finalUp ? C.up : C.down
-    const font = `700 ${Math.round(10 * s)}px "Pixelify Sans", monospace`
+    const font = `400 ${Math.round(11 * s)}px Tiny5, monospace`
 
     /* ── сетка + ценовые деления справа ── */
     ctx.lineWidth = s
@@ -252,6 +252,28 @@ export function PriceChart({
       ctx.stroke()
     }
 
+    /* мягкое свечение линии: тот же путь с небольшой shadowBlur
+       цвета линии (графика остаётся ступенчатой — это свет, не blur
+       спрайтов; движение/свечение разрешены дизайн-кодом) */
+    const glowSteps = (from: number, to: number, color: string) => {
+      if (to <= from) return
+      ctx.save()
+      ctx.beginPath()
+      ctx.moveTo(xs[from], ys[from])
+      for (let i = from + 1; i <= to; i++) {
+        ctx.lineTo(xs[i], ys[i - 1])
+        ctx.lineTo(xs[i], ys[i])
+      }
+      ctx.strokeStyle = color
+      ctx.lineWidth = 2 * s
+      ctx.shadowColor = color
+      ctx.shadowBlur = 5 * s
+      ctx.globalAlpha = 0.55
+      ctx.stroke()
+      ctx.restore()
+      ctx.globalAlpha = 1
+    }
+
     // дизеринг-заливка под линией: клип-полигон + шахматный паттерн
     const fillUnder = (from: number, to: number, color: string) => {
       if (to <= from) return
@@ -278,11 +300,13 @@ export function PriceChart({
     fillUnder(0, di, C.aqua)
     strokeSteps(0, di, C.outline, 3 * s + 2 * s)
     strokeSteps(0, di, C.aqua, 3 * s)
+    glowSteps(0, di, C.aqua)
 
     if (lastIdx > di) {
       fillUnder(di, lastIdx, revealColor)
       strokeSteps(di, lastIdx, C.outline, 3 * s + 2 * s)
       strokeSteps(di, lastIdx, revealColor, 3 * s)
+      glowSteps(di, lastIdx, revealColor)
     }
 
     /* ── вертикальный пунктир в день решения + флажок ── */

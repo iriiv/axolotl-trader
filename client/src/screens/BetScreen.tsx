@@ -41,6 +41,11 @@ export function BetScreen({
   const [timedOut, setTimedOut] = useState(false)
   const startRef = useRef<number>(performance.now())
   const phrase = useMemo(() => pickBetPhrase(), [])
+  /* на невысоких экранах график компактнее — всё видно без скролла */
+  const compact = useMemo(
+    () => window.matchMedia?.('(max-height: 700px)').matches ?? false,
+    [],
+  )
 
   const blocked = chosen !== null || timedOut
 
@@ -62,7 +67,7 @@ export function BetScreen({
   }
 
   return (
-    <div className="scr u-pop-in">
+    <div className="scr">
       <GameHeader
         roundNo={roundNo}
         roundsTotal={roundsTotal}
@@ -71,19 +76,32 @@ export function BetScreen({
         multiplier={multiplier}
       />
 
-      <div>
-        <h2 className="display bet-title">Куда пойдёт акция?</h2>
-        <p className="bet-sub">Прошлое скрыто. Твоя ставка?</p>
-      </div>
+      <div className="scr-main">
+        <div>
+          <h2 className="display bet-title">Куда пойдёт акция?</h2>
+          <p className="bet-sub">Прошлое скрыто. Твоя ставка?</p>
+        </div>
 
-      <div className="chart-panel">
-        <PriceChart
-          dates={round.chart.dates}
-          closes={round.chart.closes}
-          decisionIndex={round.chart.decisionIndex}
-          revealProgress={0}
-          height={236}
-        />
+        <div className="chart-panel">
+          <PriceChart
+            dates={round.chart.dates}
+            closes={round.chart.closes}
+            decisionIndex={round.chart.decisionIndex}
+            revealProgress={0}
+            height={compact ? 190 : 236}
+          />
+        </div>
+
+        <div className="bet-axo">
+          <Axolotl mood="wow" size={compact ? 64 : 80} animated />
+          <SpeechBubble side="left">{phrase}</SpeechBubble>
+        </div>
+
+        {timedOut && (
+          <p className="bet-timeout" role="status">
+            Время вышло — ставка пропущена!
+          </p>
+        )}
       </div>
 
       <TimerBar
@@ -93,11 +111,6 @@ export function BetScreen({
         paused={false}
         onEnd={handleTimeout}
       />
-
-      <div className="bet-axo">
-        <Axolotl mood="wow" size={80} animated />
-        <SpeechBubble side="left">{phrase}</SpeechBubble>
-      </div>
 
       <div className="bet-buttons">
         <div data-testid="btn-bet-up">
@@ -125,12 +138,6 @@ export function BetScreen({
           </PixelButton>
         </div>
       </div>
-
-      {timedOut && (
-        <p className="bet-timeout u-pop-in" role="status">
-          Время вышло — ставка пропущена!
-        </p>
-      )}
     </div>
   )
 }

@@ -1,0 +1,102 @@
+/* ═══════════════════════════════════════════════════════════════
+   Слои CRT-оверлея. Всё статично/плавно: никаких steps() и
+   мигания. Суммарная непрозрачность слоёв не мешает чтению.
+   ═══════════════════════════════════════════════════════════════ */
+
+.crt {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.crt__scan,
+.crt__vignette,
+.crt__chroma,
+.crt__glass,
+.crt__warm {
+  position: absolute;
+  inset: 0;
+}
+
+/* 1 · виньетка: экран «втягивается» к краям трубки */
+.crt__vignette {
+  background: radial-gradient(
+    ellipse 130% 110% at 50% 50%,
+    transparent 55%,
+    rgba(0, 0, 0, 0.28) 100%
+  );
+}
+
+/* 2 · мягкие сканлайны: плавные границы, долгое дыхание яркости */
+.crt__scan {
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(7, 16, 24, 0.55) 0 1px,
+    transparent 1px 4px
+  );
+  opacity: 0.05;
+  animation: crt-breathe 8s var(--ease-inout) infinite;
+}
+
+@keyframes crt-breathe {
+  0%,
+  100% {
+    opacity: 0.05;
+  }
+  50% {
+    opacity: 0.062;
+  }
+}
+
+/* 3 · хроматическая аберрация: сине-красный сдвиг по краям,
+   центр чистый (два огромных inset-теней, alpha ~.05) */
+.crt__chroma {
+  box-shadow:
+    inset 5vw 0 9vw -4vw rgba(90, 150, 255, 0.055),
+    inset -5vw 0 9vw -4vw rgba(255, 80, 120, 0.055);
+}
+
+/* 4 · specular-блик выпуклого стекла: эллипс белого 6% сверху слева */
+.crt__glass {
+  background: radial-gradient(
+    120% 65% at 24% 4%,
+    rgba(255, 255, 255, 0.06),
+    transparent 42%
+  );
+}
+
+/* 5 · «прогревание» ЭЛТ: яркая строка раскрывается в экран
+   и гаснет (scaleY 0.02→1 + fade), ~450мс ease-out */
+.crt__warm {
+  background: radial-gradient(
+    60% 100% at 50% 50%,
+    rgba(234, 246, 255, 0.9),
+    rgba(234, 246, 255, 0.25) 60%,
+    transparent 80%
+  );
+  transform-origin: 50% 50%;
+  animation: crt-warm 0.45s var(--ease-out) forwards;
+}
+
+@keyframes crt-warm {
+  0% {
+    opacity: 0.95;
+    transform: scaleY(0.02);
+  }
+  45% {
+    opacity: 0.5;
+    transform: scaleY(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+}
+
+/* prefers-reduced-motion: слои есть, но не дышат и не прогреваются */
+@media (prefers-reduced-motion: reduce) {
+  .crt__scan {
+    animation: none;
+  }
+}

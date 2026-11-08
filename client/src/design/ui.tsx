@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { animate } from 'framer-motion'
 import { sfx } from './sfx'
 import { haptic } from './haptics'
 import {
@@ -281,9 +282,11 @@ export function HeartsBar({ hearts, max = 3 }: { hearts: number; max?: number })
 }
 
 /* ═══════════════════════ ScoreCounter ═══════════════════════
-   {value, animateOn?}: число «набегает» до нового значения ступеньками,
-   изменившиеся разряды подпрыгивают. animateOn — ключ перепуска анимации
-   (если не задан, анимация запускается при каждом изменении value).
+   {value, animateOn?}: число плавно «набегает» до нового значения
+   (600мс ease-out, непрерывный tween через framer-motion animate),
+   зачисление — с лёгким punch-масштабом всего числа. animateOn —
+   ключ перепуска анимации (если не задан, анимация запускается
+   при каждом изменении value).
    ═══════════════════════ */
 
 export function ScoreCounter({
@@ -297,41 +300,41 @@ export function ScoreCounter({
 }) {
   const [shown, setShown] = useState(value)
   const shownRef = useRef(value)
-  const rafRef = useRef(0)
+  const [punchKey, setPunchKey] = useState(0)
 
   useEffect(() => {
     const from = shownRef.current
     const to = value
     if (from === to) return
-    const dur = 480
-    const steps = 6 // 8-bit набегание: 6 ступенек
-    const t0 = performance.now()
-    const roll = (t: number) => {
-      const p = Math.min(1, (t - t0) / dur)
-      const q = Math.ceil(p * steps) / steps
-      const v = Math.round(from + (to - from) * q)
-      shownRef.current = v
-      setShown(v)
-      if (p < 1) rafRef.current = requestAnimationFrame(roll)
-      else {
+    setPunchKey((k) => k + 1)
+    const controls = animate(from, to, {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: (v) => {
+        const rounded = Math.round(v)
+        if (rounded !== shownRef.current) {
+          shownRef.current = rounded
+          setShown(rounded)
+        }
+      },
+      onComplete: () => {
         shownRef.current = to
         setShown(to)
-      }
-    }
-    rafRef.current = requestAnimationFrame(roll)
-    return () => cancelAnimationFrame(rafRef.current)
+      },
+    })
+    return () => controls.stop()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, animateOn])
 
   const chars = shown.toLocaleString('ru-RU').split('')
 
   return (
-    <span className={cx('score', className)} role="status">
+    <span key={punchKey} className={cx('score is-punch', className)} role="status">
       {chars.map((ch, i) =>
         /[^\d]/.test(ch) ? (
           <span key={`g${i}`} className="score__gap" />
         ) : (
-          <span key={`d${i}-${ch}`} className="score__digit">
+          <span key={`d${i}`} className="score__digit">
             {ch}
           </span>
         ),

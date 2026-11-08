@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
    Стили пиксель-аксолотля.
+   Графика ретро, ДВИЖЕНИЕ плавное (спринги/синус, без steps).
    Слои анимаций разделены, чтобы не конфликтовать:
    .axo-bob — вертикальный бобинг (idle/read)
-   .axo-act — прыжок/тремор (cheer/wow)
-   .axo-gill-b — второй кадр жабр (мерцание = колыхание)
+   .axo-act — прыжок/тремор (cheer/wow) и «приветствие» (wave)
+   .axo-gills — жабры колышутся мягким поворотом ±2°
    ═══════════════════════════════════════════════════════════════ */
 
 .axo {
@@ -15,9 +16,15 @@
   transform: scaleX(-1);
 }
 
-/* ── бобинг: ленивое ступенчатое покачивание ── */
+/* постоянно анимируемые слои — композитинг заранее */
+.axo--anim .axo-bob,
+.axo--anim .axo-act {
+  will-change: transform;
+}
+
+/* ── бобинг: ленивое плавное покачивание (синусоида) ── */
 .axo--anim .axo-bob {
-  animation: axo-bob 2.8s steps(2, end) infinite;
+  animation: axo-bob 2.8s var(--ease-inout) infinite;
 }
 
 @keyframes axo-bob {
@@ -25,8 +32,14 @@
   100% {
     transform: translateY(0);
   }
+  25% {
+    transform: translateY(-2.5%);
+  }
   50% {
     transform: translateY(-4%);
+  }
+  75% {
+    transform: translateY(-2%);
   }
 }
 
@@ -37,47 +50,47 @@
 
 /* sad — никакого бобинга, наоборот лёгкий «вздох» вниз */
 .axo--sad.axo--anim .axo-bob {
-  animation: axo-sigh 3.4s steps(2, end) infinite;
+  animation: axo-sigh 3.4s var(--ease-inout) infinite;
 }
 
 @keyframes axo-sigh {
   0%,
-  90%,
+  88%,
   100% {
     transform: translateY(0);
   }
-  95% {
+  94% {
     transform: translateY(3%);
   }
 }
 
-/* ── прыжок радости (cheer) ── */
+/* ── прыжок радости (cheer): плавная дуга с мягким отскоком ── */
 .axo--cheer.axo--anim .axo-act {
-  animation: axo-jump 0.85s steps(4, end) infinite;
+  animation: axo-jump 0.9s var(--ease-inout) infinite;
 }
 
 @keyframes axo-jump {
   0% {
     transform: translateY(0);
   }
-  28% {
+  30% {
     transform: translateY(-9%);
   }
-  52% {
+  55% {
     transform: translateY(0);
   }
-  68% {
+  72% {
     transform: translateY(-3.5%);
   }
-  84%,
+  86%,
   100% {
     transform: translateY(0);
   }
 }
 
-/* ── удивление (wow): мелкий тремор масштаба ── */
+/* ── удивление (wow): плавный тремор масштаба ── */
 .axo--wow.axo--anim .axo-act {
-  animation: axo-wow 0.5s steps(2, end) infinite;
+  animation: axo-wow 0.55s var(--ease-inout) infinite;
 }
 
 @keyframes axo-wow {
@@ -90,29 +103,64 @@
   }
 }
 
-/* ── жабры: колыхание двумя кадрами ── */
+/* ── «приветствие» на титуле: мягкое покачивание корпусом ── */
+.axo--wave.axo--anim .axo-act {
+  transform-origin: 50% 100%;
+  animation: axo-wave 2.4s var(--ease-inout) infinite;
+}
+
+@keyframes axo-wave {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+/* ── жабры: мягкое колыхание поворотом ±2° (вместо 2 кадров) ── */
+.axo-gills {
+  transform-box: fill-box;
+}
+
+.axo-gills--l {
+  transform-origin: 100% 80%;
+}
+
+.axo-gills--r {
+  transform-origin: 0% 80%;
+}
+
+.axo--anim .axo-gills--l {
+  animation: axo-gill-sway 1.7s var(--ease-inout) infinite;
+}
+
+.axo--anim .axo-gills--r {
+  animation: axo-gill-sway 1.7s var(--ease-inout) -0.85s infinite;
+}
+
+@keyframes axo-gill-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-2deg);
+  }
+}
+
+/* второй пиксель-кадр жабр больше не мерцает — движение непрерывное */
 .axo-gill-b {
   opacity: 0;
 }
 
 .axo--anim .axo-gill-b {
-  animation: axo-gill-swap 1.15s steps(1, end) infinite;
-}
-
-@keyframes axo-gill-swap {
-  0%,
-  49% {
-    opacity: 0;
-  }
-  50%,
-  100% {
-    opacity: 1;
-  }
+  animation: none;
 }
 
 /* sad: жабры опущены и не колышутся */
 .axo--sad .axo-gills {
-  transform-box: fill-box;
   animation: none;
 }
 
@@ -131,40 +179,45 @@
   transform-origin: 0% 80%;
 }
 
-/* ── слёзы (sad): пиксели капают ступеньками ── */
+/* ── слёзы (sad): плавное падение с ускорением и растворением ── */
 .axo-tear {
   fill: var(--aqua-hi);
-  animation: axo-tear 1.15s steps(4, end) infinite;
+  animation: axo-tear 1.3s cubic-bezier(0.5, 0, 0.8, 0.6) infinite;
 }
 
 .axo-tear--2 {
-  animation-delay: 0.55s;
+  animation-delay: 0.6s;
 }
 
 @keyframes axo-tear {
   0% {
     transform: translateY(0);
+    opacity: 0;
+  }
+  12% {
     opacity: 1;
   }
-  80% {
+  75% {
     transform: translateY(5px);
     opacity: 1;
   }
   100% {
-    transform: translateY(6px);
+    transform: translateY(7px);
     opacity: 0;
   }
 }
 
-/* ── искры (cheer): плюсики мигают вразнобой ── */
+/* ── искры (cheer): плавный scale+fade вразнобой ── */
 .axo-spark rect {
   fill: currentColor;
 }
 
 .axo-spark {
   color: var(--gold);
+  transform-box: fill-box;
+  transform-origin: center;
   opacity: 0;
-  animation: axo-spark 0.9s steps(2, end) infinite;
+  animation: axo-spark 0.9s var(--ease-out) infinite;
 }
 
 .axo-spark--ink {
@@ -176,26 +229,27 @@
 }
 
 @keyframes axo-spark {
-  0%,
-  20% {
+  0% {
     opacity: 0;
-    transform: scale(0.6);
+    transform: scale(0.4);
   }
-  30%,
-  70% {
+  35% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  60% {
     opacity: 1;
     transform: scale(1);
   }
-  80%,
   100% {
     opacity: 0;
-    transform: scale(0.6);
+    transform: scale(0.5);
   }
 }
 
-/* ── монета: лёгкое парение ── */
+/* ── монета: плавное парение ── */
 .axo-coin {
-  animation: axo-coin-float 2.4s steps(2, end) infinite;
+  animation: axo-coin-float 2.4s var(--ease-inout) infinite;
 }
 
 @keyframes axo-coin-float {

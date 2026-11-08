@@ -21,23 +21,27 @@
   background: var(--btn-bg);
   color: var(--btn-ink);
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 400;
+  letter-spacing: 0.06em;
   line-height: 1;
   cursor: pointer;
-  transition: none;
+  /* возврат из нажатия — пружиной; само нажатие — быстро (см. :active) */
+  transition:
+    transform var(--dur-mid) var(--ease-spring),
+    box-shadow var(--dur-mid) var(--ease-spring),
+    filter var(--dur-fast) var(--ease-out);
 }
 
 .pxbtn--md {
   min-height: 52px;
   padding: 0 18px;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .pxbtn--lg {
   min-height: 60px;
   padding: 0 22px;
-  font-size: 17px;
+  font-size: 18px;
 }
 
 .pxbtn--xl {
@@ -97,14 +101,17 @@
   --btn-ink: var(--outline);
 }
 
-/* нажатие: вдавливание в тень */
+/* нажатие: быстрое вдавливание (ease-out), возврат — пружиной выше */
 .pxbtn:active:not(.pxbtn--disabled) {
-  transform: translate(3px, 3px);
+  transform: translate(2px, 3px) scale(0.97);
   box-shadow: 1px 1px 0 var(--outline);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .pxbtn--xl:active:not(.pxbtn--disabled) {
-  transform: translate(4px, 4px);
+  transform: translate(3px, 4px) scale(0.97);
   box-shadow: 2px 2px 0 var(--outline);
 }
 
@@ -165,18 +172,17 @@
   pointer-events: none;
 }
 
-/* пульсирующий акцентный контур (жёсткий, без blur) */
+/* пульсирующий акцентный контур (жёсткие ступени, мягкий ритм) */
 .pxcard--glow {
-  animation: card-glow 1.4s steps(2, end) infinite;
+  animation: card-glow 1.5s var(--ease-inout) infinite;
 }
 
 @keyframes card-glow {
   0%,
-  50% {
+  100% {
     box-shadow: var(--shadow-3), inset 0 0 0 0 var(--card-accent);
   }
-  51%,
-  100% {
+  50% {
     box-shadow: var(--shadow-3), inset 0 0 0 3px var(--card-accent);
   }
 }
@@ -197,9 +203,9 @@
   background: var(--panel-2);
   color: var(--card-accent);
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 0.06em;
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   box-shadow: var(--shadow-1);
 }
@@ -246,11 +252,20 @@
   text-align: left;
   cursor: pointer;
   box-shadow: var(--shadow-2);
+  transition:
+    transform var(--dur-mid) var(--ease-spring),
+    box-shadow var(--dur-mid) var(--ease-spring),
+    background-color var(--dur-mid) var(--ease-out),
+    opacity var(--dur-mid) var(--ease-out),
+    filter var(--dur-mid) var(--ease-out);
 }
 
 .opt:active:not(.opt--muted) {
-  transform: translate(3px, 3px);
+  transform: translate(2px, 3px) scale(0.97);
   box-shadow: 1px 1px 0 var(--outline);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .opt__chip {
@@ -264,8 +279,8 @@
   background: color-mix(in srgb, var(--aqua) 16%, var(--panel));
   color: var(--aqua-hi);
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 20px;
+  font-weight: 400;
+  font-size: 21px;
 }
 
 .opt__text {
@@ -299,7 +314,7 @@
 }
 
 .opt--correct {
-  animation: opt-correct 0.6s steps(2, end) 1;
+  animation: opt-correct 0.35s var(--ease-spring) 1;
   background: color-mix(in srgb, var(--up) 34%, var(--panel));
   box-shadow: var(--shadow-2), inset 0 0 0 3px var(--up);
 }
@@ -309,20 +324,25 @@
   color: var(--outline);
 }
 
+/* упругий пульс: подскок scale с overshoot и мягким спадом яркости */
 @keyframes opt-correct {
-  0%,
-  50% {
-    filter: brightness(1.7);
+  0% {
+    transform: scale(1);
+    filter: brightness(1.6);
   }
-  25%,
-  75%,
+  55% {
+    transform: scale(1.06);
+    filter: brightness(1.2);
+  }
   100% {
-    filter: none;
+    transform: scale(1);
+    filter: brightness(1);
   }
 }
 
 .opt--wrong {
-  animation: opt-wrong 0.45s steps(2, end) 1;
+  animation: opt-wrong 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) 1,
+    opt-wrong-fade 0.6s var(--ease-out) 1;
   background: color-mix(in srgb, var(--down) 34%, var(--panel));
   box-shadow: var(--shadow-2), inset 0 0 0 3px var(--down);
 }
@@ -332,6 +352,7 @@
   color: var(--outline);
 }
 
+/* тряска: резкая (семантика ошибки), амплитуда затухает */
 @keyframes opt-wrong {
   0%,
   100% {
@@ -347,7 +368,17 @@
     transform: translateX(-4px);
   }
   80% {
-    transform: translateX(3px);
+    transform: translateX(2px);
+  }
+}
+
+/* красная вспышка плавно затухает до оттенка фона */
+@keyframes opt-wrong-fade {
+  0% {
+    filter: brightness(1.7) saturate(1.3);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
   }
 }
 
@@ -370,9 +401,9 @@
   color: var(--badge-c, var(--aqua-hi));
   box-shadow: var(--shadow-1);
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.07em;
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -418,6 +449,11 @@
   height: 16px;
   background: var(--panel-2);
   border: 1px solid var(--line);
+  /* наливание/угасание сегмента — плавное, без дискретных щелчков */
+  transition:
+    background-color 0.2s linear,
+    border-color 0.2s linear,
+    filter 0.2s linear;
 }
 
 .pxtimer--hi .pxtimer__seg.is-on {
@@ -430,24 +466,23 @@
   border-color: var(--gold);
 }
 
-/* на исходе: красные + мигают ступенькой */
+/* на исходе: красные + мягко пульсируют */
 .pxtimer--lo .pxtimer__seg.is-on {
   background: var(--down);
   border-color: var(--down);
-  animation: seg-blink 0.42s steps(1, end) infinite;
+  animation: seg-blink 0.5s var(--ease-inout) infinite;
 }
 
 .pxtimer--lo .pxtimer__seg.is-on:nth-child(2n) {
-  animation-delay: 0.21s;
+  animation-delay: 0.25s;
 }
 
 @keyframes seg-blink {
   0%,
-  60% {
+  100% {
     filter: brightness(1);
   }
-  61%,
-  100% {
+  50% {
     filter: brightness(0.45);
   }
 }
@@ -522,8 +557,8 @@
 
 .combo__mult {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 22px;
+  font-weight: 400;
+  font-size: 25px;
   color: var(--ink-dim);
   text-shadow: var(--shadow-1);
 }
@@ -531,7 +566,7 @@
 /* горячий стрик: огонь горит, множитель золотой */
 .combo--hot .combo__flame {
   color: var(--gold);
-  animation: flame 0.5s steps(2, end) infinite;
+  animation: flame 0.6s var(--ease-inout) infinite;
 }
 
 .combo--hot .combo__streak {
@@ -544,12 +579,11 @@
 
 @keyframes flame {
   0%,
-  50% {
-    transform: scale(1);
-  }
-  51%,
   100% {
-    transform: scale(1.18) rotate(6deg);
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.16) rotate(6deg);
   }
 }
 
@@ -581,34 +615,35 @@
   display: inline-flex;
   align-items: baseline;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 400;
   color: var(--gold);
   text-shadow: var(--shadow-2);
 }
 
 .score__digit {
   display: inline-block;
-  font-size: 34px;
+  font-size: 35px;
   line-height: 1;
-  animation: digit-pop 0.3s steps(3, end) 1;
 }
 
 .score__gap {
   width: 8px;
 }
 
-@keyframes digit-pop {
+/* зачисление очков: лёгкий punch всего числа (spring-затухание) */
+.score.is-punch {
+  animation: score-punch 0.32s var(--ease-spring) 1;
+}
+
+@keyframes score-punch {
   0% {
-    transform: translateY(0);
+    transform: scale(1);
   }
-  30% {
-    transform: translateY(-7px) scale(1.14);
-  }
-  70% {
-    transform: translateY(2px);
+  40% {
+    transform: scale(1.15);
   }
   100% {
-    transform: translateY(0);
+    transform: scale(1);
   }
 }
 
@@ -635,7 +670,8 @@
   border-radius: 0;
   background: var(--panel);
   box-shadow: -5px -5px 0 var(--outline);
-  animation: sheet-up 0.28s steps(5, end) 1;
+  /* выезд снизу с пружинным overshoot */
+  animation: sheet-up 0.36s var(--ease-spring) 1;
 }
 
 @keyframes sheet-up {
@@ -660,10 +696,10 @@
 }
 
 .pxmodal__title {
-  font-size: 19px;
+  font-size: 20px;
   color: var(--ink);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   padding-left: 10px;
 }
 
@@ -679,11 +715,17 @@
   color: var(--ink);
   box-shadow: var(--shadow-1);
   cursor: pointer;
+  transition:
+    transform var(--dur-mid) var(--ease-spring),
+    box-shadow var(--dur-mid) var(--ease-spring);
 }
 
 .pxmodal__close:active {
   transform: translate(2px, 2px);
   box-shadow: none;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .pxmodal__close svg {
@@ -712,6 +754,7 @@
   flex: 1;
   height: 12px;
   background: var(--panel-2);
+  transition: background-color 0.2s linear;
 }
 
 .pxprog__seg.is-on {
@@ -755,8 +798,8 @@
   color: var(--chip-c, var(--aqua-hi));
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 11px;
-  letter-spacing: 0.05em;
+  font-size: 13px;
+  letter-spacing: 0.06em;
   white-space: nowrap;
 }
 
@@ -804,8 +847,8 @@
 
 .statrow__value {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 18px;
+  font-weight: 400;
+  font-size: 20px;
   text-shadow: var(--shadow-1);
 }
 

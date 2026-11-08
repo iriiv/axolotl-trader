@@ -133,10 +133,10 @@ export function DesignDemo() {
       <h2 className="demo-h2">Типографика</h2>
       <PixelCard title="Шрифты" accent="aqua">
         <div className="type-sample">
-          <div className="type-sample__h1">Pixelify Sans — заголовки</div>
+          <div className="type-sample__h1">Tiny5 — заголовки</div>
           <div className="type-sample__h2">Раунд 3 из 5 · AFLT · 2020</div>
-          <div className="type-sample__num">+1250 ▲ 12,4%</div>
-          <div className="type-sample__num type-sample__num--down">−340 ▼ 8,1%</div>
+          <div className="type-sample__num">+1250 · 12,4%</div>
+          <div className="type-sample__num type-sample__num--down">−340 · 8,1%</div>
           <p className="type-sample__p">
             Golos Text — основной текст: читается с экрана телефона, кириллица первого
             класса. Плотный, дружелюбный, без засечек.
@@ -324,8 +324,8 @@ export function DesignDemo() {
             <Badge color="aqua">Раунд 2/5</Badge>
             <Badge color="gold">IT</Badge>
             <Badge color="pink">2020</Badge>
-            <Badge color="up">▲ рост</Badge>
-            <Badge color="down">▼ обвал</Badge>
+            <Badge color="up">рост</Badge>
+            <Badge color="down">обвал</Badge>
           </div>
           <div className="demo-row">
             <Chip color="aqua">MOEX</Chip>

@@ -30,6 +30,10 @@ const args = process.argv.slice(2)
 const baseArgIdx = args.indexOf('--base')
 const BASE =
   baseArgIdx >= 0 ? args[baseArgIdx + 1] : process.env.SHOTS_URL ?? 'http://localhost:5173'
+/* момент снимка «пика сочности» ревила (мс после клика ставки):
+   график достраивается к ~1850мс, монеты/конфетти стартуют ~2170мс */
+const revealMsIdx = args.indexOf('--reveal-ms')
+const REVEAL_MS = revealMsIdx >= 0 ? Number(args[revealMsIdx + 1]) || 2300 : 2300
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -85,11 +89,22 @@ const click = async (testid) => {
 }
 
 try {
+  /* ЭЛТ-эффект явно включён для титульных снимков */
+  await context.addInitScript(() => {
+    try {
+      localStorage.setItem('ax_crt', '1')
+    } catch {}
+  })
+
   await page.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 45000 })
 
   /* 1 — титул */
   await sleep(1300)
   await shot('03-title')
+
+  /* 18 — титул с ЭЛТ-оверлеем (виньетка/сканлайны/аберрация/блик) */
+  await sleep(400)
+  await shot('18-crt-title')
 
   /* 2 — ник */
   await click('btn-play')
@@ -128,9 +143,17 @@ try {
     if (r === 1) await shot('08-bet')
     await click('btn-bet-down')
 
-    // ревил: анимация 1.4с + бейдж/фанфары
-    await sleep(3100)
-    if (r === 1) await shot('09-reveal', { full: true })
+    // ревил: прорисовка 1.4с (ease-inout) → вспышка → бейдж → фанфары
+    if (r === 1) {
+      // пик сочности: каскад-заголовок, бейдж с overshoot,
+      // конфетти и фонтан монет в полёте
+      await sleep(Math.max(1200, REVEAL_MS - 650))
+      await shot('17-juicy-reveal')
+      await sleep(1500)
+      await shot('09-reveal', { full: true })
+    } else {
+      await sleep(3100)
+    }
     await click('btn-reveal-next')
   }
 

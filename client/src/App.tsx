@@ -8,12 +8,16 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
+import type { ReactElement } from 'react'
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
+import type { Transition } from 'framer-motion'
 import { DesignDemo } from './design/DesignDemo'
 import { PixelCard } from './design/ui'
 import { sfx } from './design/sfx'
 import { fetchScores, gameData, submitScore } from './api'
 import { comboMultiplier, scoreRound, summarize } from './game/engine'
 import { storage } from './game/storage'
+import { CrtOverlay, readCrtPref, writeCrtPref } from './components/CrtOverlay'
 import type { Direction, RoundAnswer, RoundScore, Score } from './game/types'
 import { TitleScreen } from './screens/TitleScreen'
 import { NickScreen } from './screens/NickScreen'
@@ -199,10 +203,21 @@ function reducer(state: GameState, action: Action): GameState {
 
 /* ═══════════════════════ игровое приложение ═══════════════════════ */
 
+/** переход между экранами: slide + fade + scale на пружине */
+const SCREEN_TRANSITION: Transition = {
+  x: { type: 'spring', stiffness: 320, damping: 30 },
+  scale: { type: 'spring', stiffness: 320, damping: 30 },
+  opacity: { duration: 0.2, ease: 'easeOut' },
+}
+
 export default function App() {
   const [mode, setMode] = useState<'game' | 'design'>(() =>
     window.location.hash === '#design' ? 'design' : 'game',
   )
+  /* ЭЛТ-эффект: тумблер на титуле, состояние живёт в localStorage */
+  const [crt, setCrt] = useState(() => readCrtPref())
+  /* «прогревание» ЭЛТ — только при самом старте приложения */
+  const [crtWarmup, setCrtWarmup] = useState(true)
 
   useEffect(() => {
     const onHash = () => setMode(window.location.hash === '#design' ? 'design' : 'game')
@@ -210,21 +225,33 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  if (mode === 'design') {
-    return (
-      <div className="app">
-        <DesignDemo />
-      </div>
+  const toggleCrt = useCallback(() => {
+    setCrt((on) => {
+      writeCrtPref(!on)
+      return !on
+    })
+    setCrtWarmup(false)
+    sfx.tap()
+  }, [])
+
+  const content =
+    mode === 'design' ? (
+      <DesignDemo />
+    ) : (
+      <Game crtOn={crt} onToggleCrt={toggleCrt} />
     )
-  }
+
   return (
-    <div className="app">
-      <Game />
-    </div>
+    <MotionConfig reducedMotion="user">
+      <div className="app">
+        {content}
+        <CrtOverlay on={crt} warmup={crtWarmup && mode === 'game'} />
+      </div>
+    </MotionConfig>
   )
 }
 
-function Game() {
+function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void }) {
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState)
   const [muted, setMuted] = useState(() => sfx.isMuted())
   const [titleStats, setTitleStats] = useState(() => ({
@@ -311,9 +338,11 @@ function Game() {
 
   /* ═══ рендер экранов ═══ */
 
+  let screen: ReactElement
+
   switch (state.screen) {
     case 'title':
-      return (
+      screen = (
         <TitleScreen
           key="title"
           meta={meta}
@@ -321,16 +350,20 @@ function Game() {
           gamesCount={titleStats.games}
           muted={muted}
           onToggleMute={toggleMute}
+          crtOn={crtOn}
+          onToggleCrt={onToggleCrt}
           onPlay={() => dispatch({ type: 'start' })}
           onLeaderboard={() => dispatch({ type: 'leaderboard' })}
         />
       )
+      break
 
     case 'nick':
-      return <NickScreen key="nick" defaultNick={state.nick} onSubmit={handleNick} />
+      screen = <NickScreen key="nick" defaultNick={state.nick} onSubmit={handleNick} />
+      break
 
     case 'roundIntro':
-      return (
+      screen = (
         <RoundIntroScreen
           key={`intro-${round.id}`}
           round={round}
@@ -342,9 +375,10 @@ function Game() {
           onNext={() => dispatch({ type: 'openNews' })}
         />
       )
+      break
 
     case 'news':
-      return (
+      screen = (
         <NewsScreen
           key={`news-${round.id}`}
           round={round}
@@ -356,9 +390,10 @@ function Game() {
           onNext={() => dispatch({ type: 'toQuizCompany' })}
         />
       )
+      break
 
     case 'quizCompany':
-      return (
+      screen = (
         <QuizScreen
           key={`quiz-c-${round.id}`}
           question="О какой компании новости?"
@@ -384,9 +419,10 @@ function Game() {
           }
         />
       )
+      break
 
     case 'quizYear':
-      return (
+      screen = (
         <QuizScreen
           key={`quiz-y-${round.id}`}
           question="В каком году это было?"
@@ -407,9 +443,10 @@ function Game() {
           }
         />
       )
+      break
 
     case 'bet':
-      return (
+      screen = (
         <BetScreen
           key={`bet-${round.id}`}
           round={round}
@@ -423,9 +460,10 @@ function Game() {
           onTimeout={() => dispatch({ type: 'betTimeout' })}
         />
       )
+      break
 
     case 'reveal':
-      return state.lastResult ? (
+      screen = state.lastResult ? (
         <RevealScreen
           key={`reveal-${round.id}`}
           round={round}
@@ -438,10 +476,13 @@ function Game() {
           multiplier={streakMult}
           onNext={() => dispatch({ type: 'next' })}
         />
-      ) : null
+      ) : (
+        <div className="scr" />
+      )
+      break
 
     case 'summary':
-      return (
+      screen = (
         <SummaryScreen
           key="summary"
           nick={state.nick}
@@ -453,9 +494,10 @@ function Game() {
           onSubmit={() => void handleSubmitScore()}
         />
       )
+      break
 
     case 'leaderboard':
-      return (
+      screen = (
         <LeaderboardScreen
           key="leaderboard"
           scores={board.scores}
@@ -472,8 +514,31 @@ function Game() {
           onMenu={() => dispatch({ type: 'toTitle' })}
         />
       )
+      break
 
     default:
-      return null
+      screen = <div className="scr" />
   }
+
+  /* Переход экранов: slide+fade+scale на пружине (mode="wait" —
+     без наложения; exit быстрый, чтобы UX не тормозил) */
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={state.screen}
+        className="scr-anim"
+        initial={{ opacity: 0, x: 28, scale: 0.985 }}
+        animate={{ opacity: 1, x: 0, scale: 1 }}
+        exit={{
+          opacity: 0,
+          x: -20,
+          scale: 0.985,
+          transition: { x: { duration: 0.16, ease: 'easeIn' }, opacity: { duration: 0.16 }, scale: { duration: 0.16 } },
+        }}
+        transition={SCREEN_TRANSITION}
+      >
+        {screen}
+      </motion.div>
+    </AnimatePresence>
+  )
 }

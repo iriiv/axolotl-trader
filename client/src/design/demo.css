@@ -30,8 +30,8 @@
   gap: 10px;
   margin: 30px 0 12px;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 17px;
+  font-weight: 400;
+  font-size: 20px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--gold);
@@ -102,23 +102,23 @@
 
 .type-sample__h1 {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 28px;
+  font-weight: 400;
+  font-size: 30px;
   color: var(--ink);
   text-shadow: var(--shadow-1);
 }
 
 .type-sample__h2 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 400;
   font-size: 20px;
   color: var(--aqua-hi);
 }
 
 .type-sample__num {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 24px;
+  font-weight: 400;
+  font-size: 25px;
   color: var(--up);
   text-shadow: var(--shadow-1);
 }

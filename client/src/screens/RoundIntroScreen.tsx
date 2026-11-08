@@ -1,8 +1,10 @@
 /* Интро раунда: тема, заголовок, карточка-загадка, «читать новости».
-   Появление — каскадом u-pop-in с нарастающими задержками. */
+   Появление — framer-motion каскад: каждый блок пружинисто
+   всплывает снизу с нарастающей задержкой. */
 
-import type { CSSProperties } from 'react'
 import { Axolotl } from '../design/axolotl'
+import { motion } from 'framer-motion'
+import type { Transition } from 'framer-motion'
 import { Badge, PixelButton, PixelCard, SpeechBubble } from '../design/ui'
 import { GameHeader } from './GameHeader'
 import type { Round } from '../game/types'
@@ -17,7 +19,12 @@ export interface RoundIntroScreenProps {
   onNext: () => void
 }
 
-const pop = (delay: number): CSSProperties => ({ animationDelay: `${delay}s` })
+/** каскад: пружинистый подъём с задержкой по индексу блока */
+const rise = (i: number) => ({
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  transition: { delay: 0.06 * i, type: 'spring', stiffness: 340, damping: 26 } as Transition,
+})
 
 export function RoundIntroScreen({
   round,
@@ -29,7 +36,7 @@ export function RoundIntroScreen({
   onNext,
 }: RoundIntroScreenProps) {
   return (
-    <div className="scr u-pop-in">
+    <div className="scr">
       <GameHeader
         roundNo={roundNo}
         roundsTotal={roundsTotal}
@@ -38,37 +45,40 @@ export function RoundIntroScreen({
         multiplier={multiplier}
       />
 
-      <div className="intro-top">
-        <div className="intro-emoji u-pop-in" style={pop(0.05)}>
-          {round.emoji}
+      <div className="scr-main">
+        <div className="intro-top">
+          <motion.div className="intro-emoji" {...rise(0)}>
+            {round.emoji}
+          </motion.div>
+          <motion.div className="intro-theme" {...rise(1)}>
+            {round.theme}
+          </motion.div>
+          <motion.h2 className="intro-title display" {...rise(2)}>
+            {round.title}
+          </motion.h2>
         </div>
-        <div className="intro-theme u-pop-in" style={pop(0.12)}>
-          {round.theme}
+
+        <motion.div {...rise(3)}>
+          <PixelCard title="Кто это?" accent="aqua">
+            <p className="intro-hint">{round.mysteryHint}</p>
+          </PixelCard>
+        </motion.div>
+
+        <motion.div className="intro-axo" {...rise(4)}>
+          <Axolotl mood="wow" size={96} animated />
+          <SpeechBubble side="left">Я знаю, но молчу 🤫</SpeechBubble>
+        </motion.div>
+      </div>
+
+      <div className="scr-foot">
+        <div data-testid="btn-read-news">
+          <PixelButton variant="primary" size="xl" full onClick={onNext}>
+            Читать новости
+          </PixelButton>
         </div>
-        <h2 className="intro-title display u-pop-in" style={pop(0.2)}>
-          {round.title}
-        </h2>
-      </div>
-
-      <div className="u-pop-in" style={pop(0.28)}>
-        <PixelCard title="Кто это?" accent="aqua">
-          <p className="intro-hint">{round.mysteryHint}</p>
-        </PixelCard>
-      </div>
-
-      <div className="intro-axo u-pop-in" style={pop(0.36)}>
-        <Axolotl mood="wow" size={96} animated />
-        <SpeechBubble side="left">Я знаю, но молчу 🤫</SpeechBubble>
-      </div>
-
-      <div className="scr-spacer" />
-      <div className="u-pop-in" style={pop(0.44)} data-testid="btn-read-news">
-        <PixelButton variant="primary" size="xl" full onClick={onNext}>
-          Читать новости
-        </PixelButton>
-      </div>
-      <div className="u-pop-in" style={pop(0.5)}>
-        <Badge color="ink">Раунд {roundNo} из {roundsTotal}</Badge>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Badge color="ink">Раунд {roundNo} из {roundsTotal}</Badge>
+        </div>
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
-/* Титульный экран: маскот, логотип, 3 кнопки, рекорд, дисклеймер */
+/* Титульный экран: маскот, логотип, 3 кнопки, рекорд, дисклеймер,
+   тумблеры звука и ТВ-эффекта (ЭЛТ-оверлей) */
 
 import { useState } from 'react'
 import { Axolotl } from '../design/axolotl'
@@ -11,6 +12,7 @@ import {
   IconSoundOff,
   IconSoundOn,
   IconTrophy,
+  IconTv,
 } from '../design/icons'
 import { pickAxoPhrase } from '../game/phrases'
 import type { GameMeta } from '../game/types'
@@ -21,6 +23,9 @@ export interface TitleScreenProps {
   gamesCount: number
   muted: boolean
   onToggleMute: () => void
+  /** ЭЛТ-эффект (CrtOverlay) */
+  crtOn: boolean
+  onToggleCrt: () => void
   onPlay: () => void
   onLeaderboard: () => void
 }
@@ -54,6 +59,8 @@ export function TitleScreen({
   gamesCount,
   muted,
   onToggleMute,
+  crtOn,
+  onToggleCrt,
   onPlay,
   onLeaderboard,
 }: TitleScreenProps) {
@@ -61,7 +68,7 @@ export function TitleScreen({
   const phrase = pickAxoPhrase('idle')
 
   return (
-    <div className="scr scr-title u-pop-in">
+    <div className="scr scr-title">
       <button
         type="button"
         className="iconbtn"
@@ -72,43 +79,57 @@ export function TitleScreen({
         {muted ? <IconSoundOff /> : <IconSoundOn />}
       </button>
 
-      <div className="title-axo">
-        <Axolotl mood="idle" size={158} animated />
+      <button
+        type="button"
+        className={`iconbtn iconbtn--crt ${crtOn ? '' : 'is-off'}`}
+        data-testid="btn-crt"
+        aria-label={crtOn ? 'Выключить ТВ-эффект' : 'Включить ТВ-эффект'}
+        aria-pressed={crtOn}
+        onClick={onToggleCrt}
+      >
+        <IconTv />
+      </button>
+
+      <div className="title-inner">
+        <div className="title-axo">
+          {/* машет лапкой: мягкое покачивание корпусом (axo--wave) */}
+          <Axolotl mood="idle" size={148} animated className="axo--wave" />
+        </div>
+        <h1 className="title-logo display">Аксолотль-трейдер</h1>
+        <p className="title-sub">{meta.title}</p>
+        <p className="title-sub2">{meta.subtitle}</p>
+
+        <SpeechBubble side="left">{phrase}</SpeechBubble>
+
+        <div className="title-actions">
+          <div data-testid="btn-play">
+            <PixelButton variant="primary" size="xl" full onClick={onPlay}>
+              Играть
+            </PixelButton>
+          </div>
+          <div data-testid="btn-leaderboard">
+            <PixelButton variant="gold" size="lg" full icon={<IconTrophy />} onClick={onLeaderboard}>
+              Лидерборд
+            </PixelButton>
+          </div>
+          <div data-testid="btn-howto">
+            <PixelButton
+              variant="ghost"
+              size="lg"
+              full
+              icon={<IconQuestion />}
+              onClick={() => setHowtoOpen(true)}
+            >
+              Как играть
+            </PixelButton>
+          </div>
+        </div>
+
+        <p className="title-meta">
+          {gamesCount > 0 ? `Рекорд: ${bestScore.toLocaleString('ru-RU')} · Игр: ${gamesCount}` : 'Первая игра? Погнали!'}
+        </p>
+        <p className="title-disclaimer">Учебная игра. Не инвестиционная рекомендация</p>
       </div>
-      <h1 className="title-logo display">Аксолотль-трейдер</h1>
-      <p className="title-sub">{meta.title}</p>
-      <p className="title-sub2">{meta.subtitle}</p>
-
-      <SpeechBubble side="left">{phrase}</SpeechBubble>
-
-      <div className="title-actions">
-        <div data-testid="btn-play">
-          <PixelButton variant="primary" size="xl" full onClick={onPlay}>
-            Играть
-          </PixelButton>
-        </div>
-        <div data-testid="btn-leaderboard">
-          <PixelButton variant="gold" size="lg" full icon={<IconTrophy />} onClick={onLeaderboard}>
-            Лидерборд
-          </PixelButton>
-        </div>
-        <div data-testid="btn-howto">
-          <PixelButton
-            variant="ghost"
-            size="lg"
-            full
-            icon={<IconQuestion />}
-            onClick={() => setHowtoOpen(true)}
-          >
-            Как играть
-          </PixelButton>
-        </div>
-      </div>
-
-      <p className="title-meta">
-        {gamesCount > 0 ? `Рекорд: ${bestScore.toLocaleString('ru-RU')} · Игр: ${gamesCount}` : 'Первая игра? Погнали!'}
-      </p>
-      <p className="title-disclaimer">Учебная игра. Не инвестиционная рекомендация</p>
 
       <Modal open={howtoOpen} onClose={() => setHowtoOpen(false)} title="Как играть">
         <div className="howto">

@@ -38,38 +38,39 @@ export function NickScreen({ defaultNick, onSubmit }: NickScreenProps) {
   }
 
   return (
-    <form className="scr scr-nick u-pop-in" onSubmit={handleSubmit}>
-      <div className="nick-axo">
-        <Axolotl mood="read" size={120} animated />
-        <SpeechBubble side="left">Как записать тебя в хроники?</SpeechBubble>
+    <form className="scr scr-nick" onSubmit={handleSubmit}>
+      <div className="scr-main">
+        <div className="nick-axo">
+          <Axolotl mood="read" size={120} animated />
+          <SpeechBubble side="left">Как записать тебя в хроники?</SpeechBubble>
+        </div>
+
+        <label className="nick-label" htmlFor="nick-input">
+          Твой ник трейдера
+        </label>
+        <div key={badTries} className={showError ? 'u-shake' : undefined}>
+          <input
+            id="nick-input"
+            data-testid="input-nick"
+            className={`nick-input ${showError ? 'is-bad' : ''}`}
+            value={value}
+            maxLength={14}
+            autoComplete="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            placeholder="Аксоль_Трейдер"
+            enterKeyHint="done"
+            onChange={(e) => setValue(e.target.value)}
+          />
+        </div>
+        <p className={`field-hint ${showError ? 'is-bad' : ''}`} role="status">
+          {showError
+            ? 'Только буквы, цифры, пробел, «_» и «-» (до 14 символов)'
+            : 'Буквы, цифры, пробел, «_» и «-» · до 14 символов'}
+        </p>
       </div>
 
-      <label className="nick-label" htmlFor="nick-input">
-        Твой ник трейдера
-      </label>
-      <div key={badTries} className={showError ? 'u-shake' : undefined}>
-        <input
-          id="nick-input"
-          data-testid="input-nick"
-          className={`nick-input ${showError ? 'is-bad' : ''}`}
-          value={value}
-          maxLength={14}
-          autoComplete="off"
-          autoCapitalize="off"
-          spellCheck={false}
-          placeholder="Аксоль_Трейдер"
-          enterKeyHint="done"
-          onChange={(e) => setValue(e.target.value)}
-        />
-      </div>
-      <p className={`field-hint ${showError ? 'is-bad' : ''}`} role="status">
-        {showError
-          ? 'Только буквы, цифры, пробел, «_» и «-» (до 14 символов)'
-          : 'Буквы, цифры, пробел, «_» и «-» · до 14 символов'}
-      </p>
-
-      <div className="scr-spacer" />
-      <div data-testid="btn-nick-next">
+      <div className="scr-foot" data-testid="btn-nick-next">
         <PixelButton variant="primary" size="xl" full disabled={empty} type="submit">
           Дальше
         </PixelButton>

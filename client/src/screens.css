@@ -3,12 +3,61 @@
    никаких border-radius и blur. Тап-таргеты ≥52px.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── каркас экрана ── */
+/* обёртка AnimatePresence: экран целиком скользит/пружинит */
+.scr-anim {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── каркас экрана: РОВНО в высоту приложения ──
+   Шапка и низ зафиксированы, середина (.scr-main) скроллится
+   сама — документ не растягивается никогда. */
 .scr {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  min-height: 70vh;
+}
+
+/* середина: единственный скроллируемый контейнер экрана */
+.scr-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* тонкий пиксельный скроллбар (webkit) */
+.scr-main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scr-main::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--outline) 45%, transparent);
+}
+
+.scr-main::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 1px solid var(--outline);
+}
+
+/* низ экрана: кнопки всегда на виду */
+.scr-foot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 2px;
 }
 
 .scr-spacer {
@@ -32,15 +81,29 @@
 }
 
 .scr-head__score .score__digit {
-  font-size: 26px;
+  font-size: 30px;
 }
 
-/* ── титульный экран ── */
+/* ── титульный экран: центрированная композиция, точно в экран ── */
 .scr-title {
   position: relative;
   align-items: center;
   text-align: center;
-  padding-top: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* margin:auto — «безопасный» центр: при нехватке высоты
+   контент прижимается к верху и скроллится, а не обрезается */
+.title-inner {
+  margin: auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding-top: 44px; /* не залезать под абсолютные кнопки сверху */
 }
 
 .iconbtn {
@@ -57,11 +120,18 @@
   color: var(--ink);
   box-shadow: var(--shadow-1);
   cursor: pointer;
+  transition:
+    transform var(--dur-mid) var(--ease-spring),
+    box-shadow var(--dur-mid) var(--ease-spring),
+    color var(--dur-fast) var(--ease-out);
 }
 
 .iconbtn:active {
   transform: translate(2px, 2px);
   box-shadow: none;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .iconbtn svg {
@@ -69,15 +139,26 @@
   height: 20px;
 }
 
+/* тумблер ТВ стоит левее звука */
+.iconbtn--crt {
+  right: 60px;
+  color: var(--aqua-hi);
+}
+
+.iconbtn--crt.is-off {
+  color: var(--ink-dim);
+  opacity: 0.8;
+}
+
 .title-axo {
-  margin-top: 8px;
+  margin-top: 0;
 }
 
 .title-logo {
   margin-top: 10px;
   font-size: clamp(30px, 8.6vw, 40px);
-  font-weight: 700;
-  line-height: 1.06;
+  font-weight: 400;
+  line-height: 1.25;
   text-transform: uppercase;
   color: var(--aqua-hi);
 }
@@ -85,8 +166,8 @@
 .title-sub {
   margin-top: 6px;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 19px;
+  font-weight: 400;
+  font-size: 20px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--pink);
@@ -112,14 +193,14 @@
   gap: 12px;
   width: 100%;
   max-width: 360px;
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .title-meta {
   margin-top: 6px;
   font-family: var(--font-display);
-  font-size: 13px;
-  letter-spacing: 0.05em;
+  font-size: 15px;
+  letter-spacing: 0.06em;
   color: var(--ink-dim);
 }
 
@@ -161,7 +242,7 @@
 }
 
 .howto__title {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--gold);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -213,7 +294,7 @@
   background: var(--panel);
   color: var(--ink);
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 400;
   font-size: 20px;
   box-shadow: var(--shadow-2);
 }
@@ -261,16 +342,16 @@
 
 .intro-theme {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: 400;
+  font-size: 16px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--pink);
 }
 
 .intro-title {
-  font-size: clamp(26px, 8vw, 34px);
-  line-height: 1.12;
+  font-size: clamp(26px, 8vw, 35px);
+  line-height: 1.3;
 }
 
 .intro-hint {
@@ -290,7 +371,7 @@
 }
 
 .news-title {
-  font-size: 22px;
+  font-size: 25px;
 }
 
 .news-card__head {
@@ -317,8 +398,8 @@
 
 /* ── квиз ── */
 .quiz-q {
-  font-size: clamp(20px, 6vw, 24px);
-  line-height: 1.15;
+  font-size: clamp(20px, 6vw, 25px);
+  line-height: 1.3;
   padding: 4px 0 2px;
 }
 
@@ -339,8 +420,8 @@
 .quiz-points {
   min-height: 26px;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 18px;
+  font-weight: 400;
+  font-size: 20px;
 }
 
 .quiz-points.is-ok {
@@ -363,10 +444,46 @@
 }
 
 .chart-panel {
+  position: relative;
+  overflow: hidden;
   padding: 10px 8px 8px;
   border: 2px solid var(--outline);
   background: var(--panel);
   box-shadow: var(--shadow-2);
+}
+
+/* sheen-блик: диагональная полоса света пробегает по стеклу
+   каждые ~6.5с (1.2с пробег, остальное — пауза) */
+.chart-panel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 42%;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    color-mix(in srgb, var(--ink) 6%, transparent) 42%,
+    color-mix(in srgb, var(--ink) 10%, transparent) 50%,
+    color-mix(in srgb, var(--ink) 6%, transparent) 58%,
+    transparent 100%
+  );
+  transform: translateX(-140%) skewX(-14deg);
+  animation: chart-sheen 6.5s var(--ease-inout) infinite;
+}
+
+@keyframes chart-sheen {
+  0% {
+    transform: translateX(-140%) skewX(-14deg);
+  }
+  18.5% {
+    transform: translateX(290%) skewX(-14deg);
+  }
+  100% {
+    transform: translateX(290%) skewX(-14deg);
+  }
 }
 
 .bet-buttons {
@@ -381,7 +498,7 @@
 
 .bet-timeout {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 400;
   font-size: 16px;
   color: var(--down);
   text-align: center;
@@ -402,8 +519,13 @@
 }
 
 .reveal-company {
-  font-size: clamp(19px, 6vw, 24px);
-  line-height: 1.15;
+  font-size: clamp(20px, 6vw, 25px);
+  line-height: 1.3;
+}
+
+/* каскад букв: каждая буква — inline-block, пружинистый подъём */
+.reveal-cascade__ch {
+  display: inline-block;
 }
 
 .reveal-thought {
@@ -425,8 +547,8 @@
   padding: 6px 12px;
   border: 3px solid var(--outline);
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 19px;
+  font-weight: 400;
+  font-size: 20px;
   box-shadow: var(--shadow-2);
 }
 
@@ -442,7 +564,7 @@
 
 .reveal-finaldate {
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 15px;
   letter-spacing: 0.06em;
   color: var(--gold);
 }
@@ -451,7 +573,7 @@
 .reveal-extremes {
   padding: 4px 2px 0;
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.05em;
   color: var(--ink-dim);
   text-align: center;
@@ -492,6 +614,26 @@
   margin-top: 2px;
 }
 
+/* пиксель-квадрат вместо глифа ◆ (в Tiny5 таких символов нет) */
+.fact-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  box-shadow: 1px 1px 0 var(--outline);
+}
+
+/* диагональная стрелка «поделиться»: пиксель-иконка, повёрнутая на 45° */
+.share-ico {
+  display: inline-flex;
+  transform: rotate(45deg);
+}
+
+/* символы вне Tiny5 (галка ✓) — основным шрифтом Golos */
+.golos-glyph {
+  font-family: var(--font-text);
+}
+
 .lesson {
   margin-top: 12px;
   padding: 10px 12px;
@@ -514,7 +656,7 @@
   line-height: 1.45;
 }
 
-/* конфетти (компонент Confetti) */
+/* конфетти (компонент Confetti): траектории ведёт framer-motion */
 .confetti {
   position: fixed;
   inset: 0;
@@ -526,18 +668,34 @@
 .confetti__p {
   position: absolute;
   top: -8px;
-  width: 4px;
-  height: 4px;
-  animation: confetti-fall 1.5s steps(10, end) forwards;
+  box-shadow: 1px 1px 0 var(--outline);
+  will-change: transform;
 }
 
-@keyframes confetti-fall {
-  from {
-    transform: translate(0, 0);
-  }
-  to {
-    transform: translate(var(--drift, 0px), 90vh);
-  }
+/* фонтан монет (компонент CoinBurst) — поверх панели графика */
+.coin-burst {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.coin-burst__c {
+  position: absolute;
+  display: inline-flex;
+  will-change: transform;
+  filter: drop-shadow(2px 2px 0 var(--outline));
+}
+
+/* полноэкранная вспышка при завершении ревила (150мс пик) */
+.reveal-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
 }
 
 /* ── итоги ── */
@@ -550,16 +708,19 @@
 }
 
 .sum-title {
-  font-size: clamp(26px, 8vw, 32px);
+  font-size: clamp(26px, 8vw, 30px);
+  line-height: 1.3;
 }
 
 .sum-verdict {
   font-family: var(--font-display);
+  /* strong → синтетический жирный запрещён для Tiny5 */
+  font-weight: 400;
   color: var(--gold);
 }
 
 .sum-share {
-  margin-top: 12px;
+  margin-top: 0;
 }
 
 /* ── лидерборд ── */
@@ -614,8 +775,8 @@
   border: none;
   background: none;
   font-family: var(--font-display);
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-dim);
 }
@@ -631,8 +792,8 @@
   justify-content: center;
   min-width: 22px;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 400;
+  font-size: 16px;
   color: var(--ink-dim);
 }
 
@@ -668,8 +829,8 @@
 
 .lb-score {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: 400;
+  font-size: 16px;
   text-align: right;
   color: var(--gold);
 }
@@ -692,4 +853,99 @@
 /* ── мелочи ── */
 .scr > .pxcard {
   margin-top: 0;
+}
+
+/* место игрока в лидерборде мягко пульсирует золотой рамкой */
+.lb-row.is-player {
+  animation: lb-player-pulse 1.6s var(--ease-inout) infinite;
+}
+
+@keyframes lb-player-pulse {
+  0%,
+  100% {
+    outline-color: var(--gold);
+  }
+  50% {
+    outline-color: color-mix(in srgb, var(--gold) 35%, transparent);
+  }
+}
+
+/* ═══════════ АДАПТИВ: ровно экран на любой высоте ═══════════ */
+
+/* компактный режим — невысокие экраны (360×780 и ниже по высоте) */
+@media (max-height: 700px) {
+  .app {
+    padding-top: calc(6px + env(safe-area-inset-top));
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .scr,
+  .scr-main {
+    gap: 10px;
+  }
+
+  .title-logo {
+    font-size: clamp(26px, 8vw, 34px);
+  }
+
+  .title-sub {
+    font-size: 18px;
+  }
+
+  .scr-title .pxbubble {
+    max-width: 330px;
+  }
+
+  .intro-emoji {
+    font-size: 44px;
+  }
+
+  .pxbtn--xl {
+    min-height: 60px;
+    font-size: 20px;
+  }
+
+  .bet-buttons {
+    gap: 10px;
+  }
+
+  .reveal-company {
+    font-size: clamp(18px, 5.4vw, 21px);
+  }
+
+  .movepct {
+    font-size: 18px;
+  }
+}
+
+/* совсем низкие экраны (iPhone SE 1-го поколения, 320×568) */
+@media (max-height: 600px) {
+  .scr,
+  .scr-main {
+    gap: 8px;
+  }
+
+  .title-inner {
+    padding-top: 40px;
+    gap: 8px;
+  }
+
+  .title-axo .axo {
+    transform-origin: 50% 100%;
+  }
+}
+
+/* узкие экраны (320px) */
+@media (max-width: 340px) {
+  .quiz-grid .opt__label {
+    font-size: 14.5px;
+  }
+
+  .title-sub {
+    font-size: 18px;
+  }
+
+  .reveal-company {
+    font-size: 18px;
+  }
 }

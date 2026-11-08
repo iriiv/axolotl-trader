@@ -77,7 +77,7 @@ export function QuizScreen({
   }
 
   return (
-    <div className="scr u-pop-in">
+    <div className="scr">
       <GameHeader
         roundNo={roundNo}
         roundsTotal={roundsTotal}
@@ -86,21 +86,23 @@ export function QuizScreen({
         multiplier={multiplier}
       />
 
-      <h2 className="display quiz-q">{question}</h2>
+      <div className="scr-main">
+        <h2 className="display quiz-q">{question}</h2>
 
-      {hintCard}
+        {hintCard}
 
-      <div className="quiz-grid">
-        {options.map((label, i) => (
-          <div key={`${label}-${i}`} data-testid={`quiz-opt-${i}`}>
-            <OptionButton index={i} label={label} state={stateOf(i)} onClick={() => setChosen(i)} />
-          </div>
-        ))}
+        <div className="quiz-grid">
+          {options.map((label, i) => (
+            <div key={`${label}-${i}`} data-testid={`quiz-opt-${i}`}>
+              <OptionButton index={i} label={label} state={stateOf(i)} onClick={() => setChosen(i)} />
+            </div>
+          ))}
+        </div>
+
+        <p className={`quiz-points ${locked ? (correct ? 'is-ok' : 'is-no') : ''}`} role="status">
+          {locked ? (correct ? `Верно! ${pointsLabel}` : 'Мимо! +0') : ''}
+        </p>
       </div>
-
-      <p className={`quiz-points ${locked ? (correct ? 'is-ok' : 'is-no') : ''}`} role="status">
-        {locked ? (correct ? `Верно! ${pointsLabel}` : 'Мимо! +0') : ''}
-      </p>
     </div>
   )
 }

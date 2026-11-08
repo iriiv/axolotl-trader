@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Axolotl } from '../design/axolotl'
 import { Badge, Divider, PixelButton, PixelCard, SpeechBubble, StatRow } from '../design/ui'
+import { IconArrowUp } from '../design/icons'
 import { sfx } from '../design/sfx'
 import { summarize } from '../game/engine'
 import { summaryVerdict } from '../game/phrases'
@@ -20,6 +21,9 @@ export interface SummaryScreenProps {
 }
 
 const SHARE_TITLE = 'Аксолотль-трейдер'
+
+/** символы, которых нет в пиксельном Tiny5, рендерим основным шрифтом */
+const golos = (ch: string) => <span className="golos-glyph">{ch}</span>
 
 /** пользователь отменил системный шитор — это не ошибка */
 function isAbortShare(err: unknown): boolean {
@@ -76,57 +80,82 @@ export function SummaryScreen({
   }
 
   return (
-    <div className="scr u-pop-in">
-      <div className="sum-head">
-        <Badge color="aqua">Хроника: {nick}</Badge>
-        <h2 className="display sum-title">Игра окончена</h2>
+    <div className="scr">
+      <div className="scr-main">
+        <div className="sum-head">
+          <Badge color="aqua">Хроника: {nick}</Badge>
+          <h2 className="display sum-title">Игра окончена</h2>
+        </div>
+
+        <div className="sum-axo">
+          <Axolotl mood={verdict.mood} size={124} animated />
+          <SpeechBubble side="left">
+            {copied ? (
+              <strong className="sum-verdict">Ссылка скопирована</strong>
+            ) : (
+              <>
+                <strong className="sum-verdict">{verdict.title}</strong>
+                <br />
+                {verdict.phrase}
+              </>
+            )}
+          </SpeechBubble>
+        </div>
+
+        <PixelCard title="Статистика" accent="gold">
+          <StatRow label="Очки" value={score.toLocaleString('ru-RU')} accent="gold" />
+          <Divider />
+          <StatRow
+            label="Компании"
+            value={<>{golos('✓')} {stats.companiesCorrect} / {roundsTotal}</>}
+            accent="aqua"
+          />
+          <StatRow
+            label="Годы"
+            value={<>{golos('✓')} {stats.yearsCorrect} / {roundsTotal}</>}
+            accent="aqua"
+          />
+          <StatRow
+            label="Направления"
+            value={<>{golos('✓')} {stats.directionsCorrect} / {roundsTotal}</>}
+            accent="aqua"
+          />
+          <StatRow label="Лучшая серия" value={`${stats.bestStreak} подряд`} accent="gold" />
+          <StatRow
+            label="Скорость решений"
+            value={`${Math.round(stats.speedAccuracy * 100)}%`}
+            accent="ink"
+          />
+        </PixelCard>
       </div>
 
-      <div className="sum-axo">
-        <Axolotl mood={verdict.mood} size={124} animated />
-        <SpeechBubble side="left">
-          {copied ? (
-            <strong className="sum-verdict">Ссылка скопирована</strong>
-          ) : (
-            <>
-              <strong className="sum-verdict">{verdict.title}</strong>
-              <br />
-              {verdict.phrase}
-            </>
-          )}
-        </SpeechBubble>
-      </div>
-
-      <PixelCard title="Статистика" accent="gold">
-        <StatRow label="Очки" value={score.toLocaleString('ru-RU')} accent="gold" />
-        <Divider />
-        <StatRow label="Компании" value={`✓ ${stats.companiesCorrect} / ${roundsTotal}`} accent="aqua" />
-        <StatRow label="Годы" value={`✓ ${stats.yearsCorrect} / ${roundsTotal}`} accent="aqua" />
-        <StatRow label="Направления" value={`✓ ${stats.directionsCorrect} / ${roundsTotal}`} accent="aqua" />
-        <StatRow label="Лучшая серия" value={`${stats.bestStreak} подряд`} accent="gold" />
-        <StatRow
-          label="Скорость решений"
-          value={`${Math.round(stats.speedAccuracy * 100)}%`}
-          accent="ink"
-        />
-      </PixelCard>
-
-      <div className="scr-spacer" />
-      <div data-testid="btn-send-score">
-        <PixelButton
-          variant={submitted ? 'ghost' : 'gold'}
-          size="xl"
-          full
-          disabled={submitted || submitting}
-          onClick={onSubmit}
-        >
-          {submitted ? 'Отправлено ✓' : submitting ? 'Отправляем…' : 'Отправить в лидерборд'}
-        </PixelButton>
-      </div>
-      <div className="sum-share" data-testid="btn-share">
-        <PixelButton variant="ghost" size="lg" full onClick={() => void handleShare()}>
-          ↗ Поделиться
-        </PixelButton>
+      <div className="scr-foot">
+        <div data-testid="btn-send-score">
+          <PixelButton
+            variant={submitted ? 'ghost' : 'gold'}
+            size="xl"
+            full
+            disabled={submitted || submitting}
+            onClick={onSubmit}
+          >
+            {submitted ? 'Отправлено' : submitting ? 'Отправляем…' : 'Отправить в лидерборд'}
+          </PixelButton>
+        </div>
+        <div className="sum-share" data-testid="btn-share">
+          <PixelButton
+            variant="ghost"
+            size="lg"
+            full
+            icon={
+              <span className="share-ico" aria-hidden="true">
+                <IconArrowUp />
+              </span>
+            }
+            onClick={() => void handleShare()}
+          >
+            Поделиться
+          </PixelButton>
+        </div>
       </div>
     </div>
   )
