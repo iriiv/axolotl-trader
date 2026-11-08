@@ -19,14 +19,14 @@ const OUT_PATH = path.join(OUT_DIR, 'game.json');
 
 // Те же боты, что и в server/src/db.js — для паритета локального лидерборда.
 const SEED_SCORES = [
-  { player: 'Квант_Лягушка', score: 4120, roundsTotal: 5, directionsCorrect: 5, bestStreak: 5, createdAt: '2026-10-30 12:00' },
-  { player: 'ДедИнвестор', score: 3865, roundsTotal: 5, directionsCorrect: 4, bestStreak: 3, createdAt: '2026-10-31 12:00' },
-  { player: 'Акси_2024', score: 3410, roundsTotal: 5, directionsCorrect: 4, bestStreak: 2, createdAt: '2026-11-01 12:00' },
-  { player: 'ТрейдерГена', score: 2950, roundsTotal: 5, directionsCorrect: 3, bestStreak: 2, createdAt: '2026-11-02 12:00' },
-  { player: 'МаржинКоллин', score: 2675, roundsTotal: 5, directionsCorrect: 3, bestStreak: 2, createdAt: '2026-11-03 12:00' },
-  { player: 'Портфельчик', score: 2230, roundsTotal: 5, directionsCorrect: 2, bestStreak: 2, createdAt: '2026-11-05 12:00' },
-  { player: 'ГречкаБаронесса', score: 1780, roundsTotal: 5, directionsCorrect: 2, bestStreak: 1, createdAt: '2026-11-06 12:00' },
-  { player: 'Новичок_с_ЧС', score: 1240, roundsTotal: 5, directionsCorrect: 1, bestStreak: 1, createdAt: '2026-11-07 12:00' },
+  { player: 'Квант_Лягушка', score: 6940, roundsTotal: 10, directionsCorrect: 9, bestStreak: 7, createdAt: '2026-10-30 12:00' },
+  { player: 'ДедИнвестор', score: 6180, roundsTotal: 10, directionsCorrect: 8, bestStreak: 5, createdAt: '2026-10-31 12:00' },
+  { player: 'Акси_2024', score: 5430, roundsTotal: 10, directionsCorrect: 8, bestStreak: 4, createdAt: '2026-11-01 12:00' },
+  { player: 'ТрейдерГена', score: 4650, roundsTotal: 10, directionsCorrect: 7, bestStreak: 4, createdAt: '2026-11-02 12:00' },
+  { player: 'МаржинКоллин', score: 3870, roundsTotal: 10, directionsCorrect: 6, bestStreak: 3, createdAt: '2026-11-03 12:00' },
+  { player: 'Портфельчик', score: 3180, roundsTotal: 10, directionsCorrect: 5, bestStreak: 3, createdAt: '2026-11-05 12:00' },
+  { player: 'ГречкаБаронесса', score: 2410, roundsTotal: 10, directionsCorrect: 4, bestStreak: 2, createdAt: '2026-11-06 12:00' },
+  { player: 'Новичок_с_ЧС', score: 1640, roundsTotal: 10, directionsCorrect: 3, bestStreak: 2, createdAt: '2026-11-07 12:00' },
 ];
 
 const content = JSON.parse(fs.readFileSync(CONTENT_PATH, 'utf8'));
