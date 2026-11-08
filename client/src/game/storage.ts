@@ -72,12 +72,17 @@ export function localDateKey(d: Date): string {
 
 /* e2e-хук подмены даты: window.__setDateKey('YYYY-MM-DD' | null).
    Установка дергает событие 'ax-date-change', чтобы приложение
-   пересчитало состояние daily без перезагрузки. */
+   пересчитало состояние daily без перезагрузки.
+   Аналогичный хук __forceDropRarity — форсирует редкость следующего
+   дропа из сундука (для скриншотов/тестов анимаций редкости). */
 declare global {
   interface Window {
     /** тест-хук: подменить локальную дату (null — реальная) */
     __setDateKey?: (key: string | null) => void
     __axDateKey?: string | null
+    /** тест-хук: редкость следующего дропа ('common'|'rare'|'epic'|'legend'; null — сброс) */
+    __forceDropRarity?: (rarity: string | null) => void
+    __axForceRarity?: string | null
   }
 }
 
@@ -85,6 +90,12 @@ if (typeof window !== 'undefined' && typeof window.__setDateKey !== 'function') 
   window.__setDateKey = (key: string | null) => {
     window.__axDateKey = key
     window.dispatchEvent(new Event('ax-date-change'))
+  }
+}
+
+if (typeof window !== 'undefined' && typeof window.__forceDropRarity !== 'function') {
+  window.__forceDropRarity = (rarity: string | null) => {
+    window.__axForceRarity = rarity
   }
 }
 
@@ -267,5 +278,21 @@ export const storage = {
 
   setDaily(d: DailyState): void {
     write(KEYS.daily, d)
+  },
+
+  /* ── дебаг (хаб v1.2) ── */
+
+  /** полный сброс прогресса: все ключи ax_* + настройки axolotl.* */
+  resetAll(): void {
+    try {
+      const doomed: string[] = []
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const k = window.localStorage.key(i)
+        if (k && (k.startsWith('ax_') || k.startsWith('axolotl.'))) doomed.push(k)
+      }
+      doomed.forEach((k) => window.localStorage.removeItem(k))
+    } catch {
+      /* нет storage — нечего сбрасывать */
+    }
   },
 }

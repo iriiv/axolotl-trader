@@ -48,8 +48,9 @@ export function dailyCoins(result: RoundAnswer, streakDays: number): number {
 
 /* ─────────── сундуки: цены и дроп-таблицы (спец §2) ─────────── */
 
-/** цены дооткрытия в гардеробе; деревянный не продаётся */
-export const CHEST_PRICES: Record<'pearl' | 'gold', number> = {
+/** цены сундуков в магазине хаба (v1.2: деревянный за 50 — новинка) */
+export const CHEST_PRICES: Record<ChestType, number> = {
+  wooden: 50,
   pearl: 150,
   gold: 400,
 }
@@ -124,16 +125,23 @@ export interface DropResult {
  * РЕДКОСТЬ по таблице сундука, затем случайный предмет этой редкости
  * из каталога (не стартовые). Если всё этой редкости уже есть —
  * дубликат случайного с компенсацией (спец §2).
+ * forcedRarity — дебаг/e2e-хук: принудительная редкость следующего
+ * дропа (валидную проверяет вызывающий или она игнорируется).
  */
 export function rollDrop(
   chestType: ChestType,
   ownedIds: string[],
   pityCounter: number,
   rng: () => number = Math.random,
+  forcedRarity?: DropRarity,
 ): DropResult {
   const table = DROP_TABLES[chestType]
-  const pityUsed = chestType === 'wooden' && pityCounter >= PITY_LIMIT
-  const rarity = pityUsed ? pickRarity(atLeastRare(table), rng) : pickRarity(table, rng)
+  const forced =
+    forcedRarity !== undefined && DROP_RARITIES.includes(forcedRarity) ? forcedRarity : null
+  const pityUsed = chestType === 'wooden' && pityCounter >= PITY_LIMIT && forced === null
+  const rarity =
+    forced ??
+    (pityUsed ? pickRarity(atLeastRare(table), rng) : pickRarity(table, rng))
 
   // тип равновероятный; страховка от пустого пула — вся редкость
   const kind = KINDS[Math.floor(rng() * KINDS.length)]

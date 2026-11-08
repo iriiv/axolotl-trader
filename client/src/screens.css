@@ -261,9 +261,18 @@
   color: color-mix(in srgb, var(--ink) 88%, var(--panel));
 }
 
-/* ── ник ── */
+/* ── ник / регистрация ── */
 .scr-nick {
   padding-top: 20px;
+}
+
+.nick-kicker {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
 }
 
 .nick-axo,

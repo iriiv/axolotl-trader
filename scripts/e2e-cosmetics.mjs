@@ -337,8 +337,13 @@ async function scenarioCosmetics(browser) {
   await page.locator('[data-testid="btn-wardrobe"] button').click()
   await page.locator('[data-testid="wardrobe-screen"]').waitFor()
   await page.locator('.wrd__tab:has-text("Шляпы")').click()
-  await page.locator('button[aria-label^="Кепка "]').click()
-  await page.waitForTimeout(200)
+  /* если выпала именно кепка — она уже надета, и первый тап по карточке
+     СНЯЛ бы её (тап по надетому = снять): нужен второй тап обратно */
+  const capClicks = dropId === 'hat-cap' ? 2 : 1
+  for (let i = 0; i < capClicks; i++) {
+    await page.locator('button[aria-label^="Кепка "]').click()
+    await page.waitForTimeout(200)
+  }
   const equip3 = await readStorage(page, 'ax_equip', null)
   check(scenario, 'кепка надета: ax_equip.hat = hat-cap', !!equip3 && equip3.hat === 'hat-cap', JSON.stringify(equip3))
 

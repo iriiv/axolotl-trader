@@ -132,6 +132,38 @@ class Sfx {
     this.blip(1567.98, { type: 'triangle', at: t + 0.02, dur: 0.14, gain: 0.35 })
   }
 
+  /** Эпический дроп: низкий удар + розовое арпеджио (деликатно) */
+  epic() {
+    this.blip(196, { type: 'sawtooth', dur: 0.38, gain: 0.26, slideTo: 98 })
+    const notes = [880, 1108.73, 1318.51]
+    notes.forEach((f, i) => {
+      this.blip(f, { type: 'square', at: 0.08 + i * 0.09, dur: 0.1, gain: 0.24 })
+    })
+    this.blip(1760, { type: 'triangle', at: 0.38, dur: 0.22, gain: 0.3 })
+    this.blip(2217.46, { type: 'triangle', at: 0.5, dur: 0.16, gain: 0.2 })
+  }
+
+  /** Легендарный дроп: мажорное арпеджио из 6 нот + октавный блеск */
+  legend() {
+    const seq: Array<[number, number]> = [
+      [523.25, 0.13],
+      [659.25, 0.13],
+      [783.99, 0.13],
+      [1046.5, 0.16],
+      [1318.51, 0.2],
+      [1567.98, 0.52],
+    ]
+    let t = 0
+    for (const [f, d] of seq) {
+      this.blip(f, { type: 'triangle', at: t, dur: d, gain: 0.5 })
+      this.blip(f / 2, { type: 'square', at: t, dur: d * 0.6, gain: 0.12 })
+      t += d + 0.02
+    }
+    // октавный «дождь» из блёсток
+    this.blip(2093, { type: 'triangle', at: t + 0.02, dur: 0.3, gain: 0.22 })
+    this.blip(2637.02, { type: 'triangle', at: t + 0.14, dur: 0.26, gain: 0.16 })
+  }
+
   /** Пружинистый «поп» (появление карточки) */
   pop() {
     this.blip(300, { type: 'sine', dur: 0.07, gain: 0.5, slideTo: 720 })

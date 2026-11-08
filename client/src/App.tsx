@@ -1,7 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════
    Аксолотль-трейдер — игровой цикл (стейт-машина на useReducer,
-   без роутера): title → nick → roundIntro → news → quizCompany →
-   quizYear → bet → reveal → (следующий | summary) → leaderboard.
+   без роутера): hub → (регистрация) → roundIntro → news →
+   quizCompany → quizYear → bet → reveal → (следующий | summary) →
+   leaderboard. Хаб (виток v1.2) — маскот-центричная главная с
+   нижней навигацией; гардероб и магазин — секции хаба.
 
    Витрина дизайн-системы остаётся доступной по location.hash
    === '#design' (переключение на лету через hashchange).
@@ -40,7 +42,8 @@ import type { ChestType } from './design/cosmetics/chests'
 import type { DailyCaseCell } from './design/cosmetics'
 import { CrtOverlay, readCrtPref, writeCrtPref } from './components/CrtOverlay'
 import type { Direction, RoundAnswer, RoundScore, Score } from './game/types'
-import { TitleScreen } from './screens/TitleScreen'
+import { HubScreen } from './screens/HubScreen'
+import type { HubTab } from './screens/HubScreen'
 import { NickScreen } from './screens/NickScreen'
 import { RoundIntroScreen } from './screens/RoundIntroScreen'
 import { NewsScreen } from './screens/NewsScreen'
@@ -49,14 +52,13 @@ import { BetScreen } from './screens/BetScreen'
 import { RevealScreen } from './screens/RevealScreen'
 import { SummaryScreen } from './screens/SummaryScreen'
 import { LeaderboardScreen } from './screens/LeaderboardScreen'
-import { WardrobeScreen } from './screens/WardrobeScreen'
 import { ChestScreen } from './screens/ChestScreen'
 import { DailyResultScreen } from './screens/DailyResultScreen'
 import './screens.css'
 import './screens/cosmetics-screens.css'
 
 type Screen =
-  | 'title'
+  | 'hub'
   | 'nick'
   | 'roundIntro'
   | 'news'
@@ -66,7 +68,6 @@ type Screen =
   | 'reveal'
   | 'summary'
   | 'leaderboard'
-  | 'wardrobe'
   | 'chest'
   | 'dailyResult'
 
@@ -77,7 +78,10 @@ type PlayMode = 'campaign' | 'daily'
 interface ChestRun {
   type: ChestType
   from: 'campaign' | 'daily' | 'shop'
-  returnTo: 'title' | 'leaderboard' | 'wardrobe'
+  /** после «Забрать»: лидерборд или хаб */
+  returnTo: 'hub' | 'leaderboard'
+  /** восстановить вкладку хаба (магазин/гардероб/аккаунт); умолчание — главная */
+  hubTab?: HubTab
   /** плашка над сундуком (например «Стрик 7!») */
   plate?: string
   /** бесплатный сундук партии открывается сам (не ждёт тапов) */
@@ -127,6 +131,7 @@ type Action =
   | { type: 'start' }
   | { type: 'startDaily'; roundIdx: number; dayNo: number }
   | { type: 'setNick'; nick: string }
+  | { type: 'updateNick'; nick: string }
   | { type: 'openNews' }
   | { type: 'toQuizCompany' }
   | { type: 'answerCompany'; correct: boolean; guessed: string }
@@ -137,15 +142,14 @@ type Action =
   | { type: 'dailyFinished'; result: DailySummary }
   | { type: 'leaderboard' }
   | { type: 'playAgain' }
-  | { type: 'toTitle' }
-  | { type: 'openWardrobe' }
+  | { type: 'toHub' }
   | { type: 'openChest'; chest: ChestRun }
   | { type: 'chestDone' }
   | { type: 'submitted'; submission: GameState['submission'] }
 
 function createInitialState(): GameState {
   return {
-    screen: 'title',
+    screen: 'hub',
     mode: 'campaign',
     roundIdx: 0,
     score: 0,
@@ -201,11 +205,16 @@ function resolveBet(state: GameState, bet: Direction | null, timeLeftRatio: numb
 
 function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
+    /* кампания: с ником — сразу к раундам, без ника — регистрация */
     case 'start':
-      return { ...state, mode: 'campaign', screen: 'nick' }
+      return {
+        ...createInitialState(),
+        nick: state.nick,
+        screen: state.nick ? 'roundIntro' : 'nick',
+      }
 
     case 'startDaily':
-      if (state.screen !== 'title') return state
+      if (state.screen !== 'hub') return state
       return {
         ...createInitialState(),
         nick: state.nick,
@@ -221,6 +230,10 @@ function reducer(state: GameState, action: Action): GameState {
         nick: action.nick,
         screen: 'roundIntro',
       }
+
+    /* регистрация/смена ника из хаба — остаёмся на месте */
+    case 'updateNick':
+      return { ...state, nick: action.nick }
 
     case 'openNews':
       return { ...state, screen: 'news' }
@@ -275,27 +288,24 @@ function reducer(state: GameState, action: Action): GameState {
       return { ...state, screen: 'leaderboard' }
 
     case 'playAgain':
-      return { ...createInitialState(), nick: state.nick, screen: 'nick' }
+      return {
+        ...createInitialState(),
+        nick: state.nick,
+        screen: state.nick ? 'roundIntro' : 'nick',
+      }
 
-    case 'toTitle':
+    case 'toHub':
       return { ...createInitialState(), nick: state.nick }
-
-    case 'openWardrobe':
-      if (state.screen !== 'title') return state
-      return { ...state, screen: 'wardrobe' }
 
     case 'openChest':
       return { ...state, screen: 'chest', chest: action.chest }
 
-    case 'chestDone': {
-      const go =
-        state.chest?.returnTo === 'wardrobe'
-          ? 'wardrobe'
-          : state.chest?.returnTo === 'leaderboard'
-            ? 'leaderboard'
-            : 'title'
-      return { ...state, screen: go, chest: null }
-    }
+    case 'chestDone':
+      return {
+        ...state,
+        screen: state.chest?.returnTo === 'leaderboard' ? 'leaderboard' : 'hub',
+        chest: null,
+      }
 
     case 'submitted':
       return { ...state, submission: action.submission }
@@ -312,8 +322,10 @@ function readDailyInfo() {
   return {
     dateKey: key,
     dayNo: dayNumber(key),
+    dateLabel: dateLabelRu(key),
     playedToday: d.lastDateKey === key,
     streak: d.streak,
+    bestStreak: d.bestStreak,
   }
 }
 
@@ -370,9 +382,10 @@ export default function App() {
 function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void }) {
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState)
   const [muted, setMuted] = useState(() => sfx.isMuted())
-  const [titleStats, setTitleStats] = useState(() => ({
+  const [hubStats, setHubStats] = useState(() => ({
     best: storage.getBestScore(),
     games: storage.getGamesCount(),
+    last: storage.getLastResult(),
   }))
   const [board, setBoard] = useState<{ scores: Score[]; offline: boolean; loading: boolean }>({
     scores: [],
@@ -390,6 +403,9 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
   const [equip, setEquip] = useState<EquipState>(() => storage.getEquip())
   const [pity, setPity] = useState(() => storage.getPity())
   const [dailyInfo, setDailyInfo] = useState(() => readDailyInfo())
+  /* активная секция хаба (живёт над экранами: после партии/сундука
+     возвращаемся на нужную вкладку) */
+  const [hubTab, setHubTab] = useState<HubTab>('home')
 
   const meta = gameData.game
   const rounds = gameData.rounds
@@ -401,10 +417,21 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
   const streakMult = comboMultiplier(state.streak, meta.comboSteps)
   const stats = summarize(state.log, rounds.length)
 
-  /* обновляем мини-строку «Рекорд/Игр» при возврате на титул */
+  /* подпись кампании для карточки режимов: «2014→2023» */
+  const campaignLabel = (() => {
+    const years = rounds.map((r) => r.answers.year).filter((y) => typeof y === 'number')
+    if (years.length === 0) return ''
+    return `${Math.min(...years)}→${Math.max(...years)}`
+  })()
+
+  /* обновляем стату профиля при возврате в хаб */
   useEffect(() => {
-    if (state.screen === 'title') {
-      setTitleStats({ best: storage.getBestScore(), games: storage.getGamesCount() })
+    if (state.screen === 'hub') {
+      setHubStats({
+        best: storage.getBestScore(),
+        games: storage.getGamesCount(),
+        last: storage.getLastResult(),
+      })
       setDailyInfo(readDailyInfo())
     }
   }, [state.screen])
@@ -452,6 +479,12 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
     dispatch({ type: 'setNick', nick })
   }, [])
 
+  /** регистрация на главной хаба / смена ника в аккаунте */
+  const handleNickUpdate = useCallback((nick: string) => {
+    storage.setNick(nick)
+    dispatch({ type: 'updateNick', nick })
+  }, [])
+
   /* сабмит: сначала деревянный сундук за партию, потом лидерборд */
   const handleSubmitScore = useCallback(async () => {
     if (submitting || state.submission) return
@@ -475,7 +508,14 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
 
   const rollChestLoot = useCallback(
     (chestType: ChestType): DropResult => {
-      const drop = rollDrop(chestType, inv, pity)
+      /* e2e/скриншот-хук: форсируем редкость следующего дропа */
+      const forcedRaw = window.__axForceRarity
+      const forced =
+        forcedRaw === 'common' || forcedRaw === 'rare' || forcedRaw === 'epic' || forcedRaw === 'legend'
+          ? forcedRaw
+          : undefined
+      if (forcedRaw) window.__forceDropRarity?.(null) // одноразовый
+      const drop = rollDrop(chestType, inv, pity, Math.random, forced)
       if (drop.duplicate) {
         setCoins(storage.addCoins(drop.refundCoins))
       } else {
@@ -508,15 +548,57 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
     [equip],
   )
 
-  /** покупка сундука за монеты: списание здесь, экран — ChestScreen */
+  /** покупка сундука за монеты (магазин/гардероб): списание здесь,
+      экран — ChestScreen; возврат в ту же секцию хаба */
   const handleBuyChest = useCallback(
-    (chest: 'pearl' | 'gold') => {
+    (chest: ChestType) => {
       if (!storage.spendCoins(CHEST_PRICES[chest])) return
       setCoins(storage.getCoins())
-      dispatch({ type: 'openChest', chest: { type: chest, from: 'shop', returnTo: 'wardrobe' } })
+      dispatch({
+        type: 'openChest',
+        chest: { type: chest, from: 'shop', returnTo: 'hub', hubTab: hubTab === 'home' ? 'shop' : hubTab },
+      })
     },
-    [],
+    [hubTab],
   )
+
+  /** «Забрать» на сундуке: вернуть хаб на нужную вкладку */
+  const handleChestDone = useCallback(() => {
+    const run = state.chest
+    if (run?.returnTo === 'hub') setHubTab(run.hubTab ?? 'home')
+    dispatch({ type: 'chestDone' })
+  }, [state.chest])
+
+  /** выход в хаб (из лидерборда и пр.) — на главную секцию */
+  const handleToHub = useCallback(() => {
+    setHubTab('home')
+    dispatch({ type: 'toHub' })
+  }, [])
+
+  /* ── дебаг-панель (Аккаунт → 🐞 Отладка) ── */
+
+  const handleDebugAddCoins = useCallback(() => {
+    setCoins(storage.addCoins(9999))
+  }, [])
+
+  /** золотой сундук бесконечно и бесплатно — через обычную экономику */
+  const handleDebugOpenGold = useCallback(() => {
+    dispatch({
+      type: 'openChest',
+      chest: { type: 'gold', from: 'shop', returnTo: 'hub', hubTab: 'account' },
+    })
+  }, [])
+
+  const handleDebugGiveAll = useCallback(() => {
+    let list = storage.getInventory()
+    for (const item of COSMETICS) list = storage.addToInventory(item.id)
+    setInv(list)
+  }, [])
+
+  const handleDebugReset = useCallback(() => {
+    storage.resetAll()
+    window.location.reload()
+  }, [])
 
   /* ── хроника дня ── */
 
@@ -580,8 +662,8 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
     dispatch({
       type: 'openChest',
       chest: r?.goldChest
-        ? { type: 'gold', from: 'daily', returnTo: 'title', plate: `Стрик ${r.streakDays}!` }
-        : { type: 'pearl', from: 'daily', returnTo: 'title' },
+        ? { type: 'gold', from: 'daily', returnTo: 'hub', hubTab: 'home', plate: `Стрик ${r.streakDays}!` }
+        : { type: 'pearl', from: 'daily', returnTo: 'hub', hubTab: 'home' },
     })
   }, [state.dailyResult])
 
@@ -597,30 +679,45 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
   let screen: ReactElement
 
   switch (state.screen) {
-    case 'title':
+    case 'hub':
       screen = (
-        <TitleScreen
-          key="title"
-          meta={meta}
-          bestScore={titleStats.best}
-          gamesCount={titleStats.games}
+        <HubScreen
+          key="hub"
+          nick={state.nick}
+          bestScore={hubStats.best}
+          gamesCount={hubStats.games}
+          lastResult={hubStats.last}
           muted={muted}
           onToggleMute={toggleMute}
           crtOn={crtOn}
           onToggleCrt={onToggleCrt}
-          onPlay={() => dispatch({ type: 'start' })}
-          onLeaderboard={() => dispatch({ type: 'leaderboard' })}
           equip={equip}
           coins={coins}
-          ownedCount={inv.length}
+          ownedIds={inv}
           itemsTotal={COSMETICS.length}
+          campaignLabel={campaignLabel}
+          roundsTotal={rounds.length}
           daily={{
             dayNo: dailyInfo.dayNo,
+            dateLabel: dailyInfo.dateLabel,
             playedToday: dailyInfo.playedToday,
             streak: dailyInfo.streak,
+            bestStreak: dailyInfo.bestStreak,
           }}
+          tab={hubTab}
+          onTab={setHubTab}
+          onPlay={() => dispatch({ type: 'start' })}
           onDaily={handleStartDaily}
-          onWardrobe={() => dispatch({ type: 'openWardrobe' })}
+          onLeaderboard={() => dispatch({ type: 'leaderboard' })}
+          onBuyChest={handleBuyChest}
+          onEquip={handleWardrobeEquip}
+          onNickChange={handleNickUpdate}
+          debug={{
+            onAddCoins: handleDebugAddCoins,
+            onOpenGold: handleDebugOpenGold,
+            onGiveAll: handleDebugGiveAll,
+            onReset: handleDebugReset,
+          }}
         />
       )
       break
@@ -802,22 +899,7 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
             bestStreak: stats.bestStreak,
           }}
           onPlayAgain={() => dispatch({ type: 'playAgain' })}
-          onMenu={() => dispatch({ type: 'toTitle' })}
-        />
-      )
-      break
-
-    case 'wardrobe':
-      screen = (
-        <WardrobeScreen
-          key="wardrobe"
-          coins={coins}
-          ownedIds={inv}
-          equip={equip}
-          itemsTotal={COSMETICS.length}
-          onEquip={handleWardrobeEquip}
-          onBack={() => dispatch({ type: 'toTitle' })}
-          onBuyChest={handleBuyChest}
+          onMenu={handleToHub}
         />
       )
       break
@@ -832,7 +914,7 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
           autoAdvance={run.auto}
           onRollLoot={() => rollChestLoot(run.type)}
           onEquipItem={handleChestEquip}
-          onDone={() => dispatch({ type: 'chestDone' })}
+          onDone={handleChestDone}
         />
       ) : (
         <div className="scr" />

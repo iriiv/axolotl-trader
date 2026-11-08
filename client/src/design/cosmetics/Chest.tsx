@@ -29,6 +29,8 @@ export interface ChestProps {
   animated?: boolean
   /** ширина в px (высота = size × 24/22) */
   size?: number
+  /** крышка улетает с вращением (легендарный дроп) */
+  lidFly?: boolean
   onClick?: () => void
   className?: string
   style?: CSSProperties
@@ -69,6 +71,7 @@ export function Chest({
   open = false,
   animated = true,
   size = 120,
+  lidFly = false,
   onClick,
   className,
   style,
@@ -77,6 +80,7 @@ export function Chest({
   const info = CHESTS[type]
   const cls = [
     'chest',
+    `chest--t-${type}`,
     open ? 'chest--open' : 'chest--closed',
     !open && animated ? 'chest--breathe' : '',
     className ?? '',
@@ -102,11 +106,18 @@ export function Chest({
         focusable="false"
       >
         {/* тряска при открытии + откидная крышка — CSS-пружины
-            (transform на svg <g>, как у жабр аксолотля) */}
+            (transform на svg <g>, как у жабр аксолотля);
+            крышка легендарного дропа улетает с вращением */}
         <g className={cx('chest__inner', open && 'chest__inner--shake')}>
           {/* крышка: hinge по нижней кромке, при open откидывается назад */}
           <g transform={`translate(${CHEST_VIEW.lid.x} ${CHEST_VIEW.lid.y})`}>
-            <g className={cx('chest__lid', open && 'chest__lid--open')}>
+            <g
+              className={cx(
+                'chest__lid',
+                open && 'chest__lid--open',
+                lidFly && 'chest__lid--fly',
+              )}
+            >
               <PixelRows rows={CHEST_LID} legend={legend} />
             </g>
           </g>

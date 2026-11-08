@@ -125,7 +125,7 @@ x=5 у рогов). Аксессуары — `ACC_SPRITES` + `ACC_LEGENDS` + `AC
 ```tsx
 import { Chest, ChestOpen, DropReveal } from './design/cosmetics'
 
-<Chest type="gold" open={opened} animated size={120} onClick={…} />
+<Chest type="gold" open={opened} animated size={120} onClick={…} lidFly={legend} />
 <ChestOpen chest="pearl" item={drop} opened duplicateCoins={150}
            onOpen={…} onEquip={…} onTake={…} size={160} />
 <DropReveal item={item} size={92} duplicateCoins={240} />
@@ -133,14 +133,21 @@ import { Chest, ChestOpen, DropReveal } from './design/cosmetics'
 
 - **Chest** — типы `wooden | pearl | gold` (`CHESTS`, `CHEST_LEGENDS`, спрайты
   `CHEST_LID/BASE/INSIDE/RAYS` в `chests.ts`, viewBox «0 -8 22 24»). Закрытый
-  «дышит»; при `open` — тряска → крышка откидывается (CSS-пружина на svg-группе)
-  → светящаяся внутренность + веер лучей (у gold — искры).
+  «дышит»; при `open` — тряска (сильнее у золотого: класс `chest--t-{type}`) →
+  крышка откидывается (CSS-пружина на svg-группе) → светящаяся внутренность +
+  веер лучей (у gold — искры). `lidFly` — крышка улетает с вращением на 720°
+  (легендарный дроп).
 - **ChestOpen** — каркас экрана: сундук + кнопка «ОТКРЫТЬ», после открытия
-  `DropReveal` и слоты «ЭКИПИРОВАТЬ»/«ЗАБРАТЬ» (колбэки обязательные по смыслу,
-  состояние открыто/дроп — снаружи).
-- **DropReveal** — лучи редкости за предметом (легенда — вращающиеся), крупная
-  иконка `ItemIcon`, имя + плашка редкости (легенда — перелив), искры легенды,
-  плашка «+N ⬤» компенсации за дубликат (монета-иконка + число).
+  `DropReveal` и слоты «ЭКИПИРОВАТЬ»/«ЗАБРАТЬ» (появляются после полного
+  шоу-ревила: `--dr-ms` = 1.2/1.6/2/2.8с по редкости, классы `cso--{rarity}`).
+- **DropReveal** — шоу-ревил ПО РЕДКОСТИ (классы `dr--common|rare|epic|legend`,
+  проп `rarity` переопределяет редкость предмета):
+  common — дуга-выныривание + статичные лучи + puff-пыль; rare — аква-вспышка
+  на сундуке, взлёт с трейлом из пиксель-квадратов, вращающиеся лучи, глитч;
+  epic — розовая вспышка на весь экран, тряска контейнера, кольцевые волны,
+  3 искры по ромбовидной орбите, виньетка по краям; legend — slow-mo,
+  «божественные» лучи-конус, мерцающая рамка-перелив, пиксель-фейерверк из
+  14 частиц, каскад букв «ЛЕГЕНДАРНЫЙ». Плашка «+N ⬤» — компенсация дубля.
 
 ### Гардероб и карточки
 
@@ -237,7 +244,7 @@ overshoot, пиксель-шапка, крестик 52×52, Escape/клик п�
 ### Иконки (icons.tsx)
 `IconArrowUp, IconArrowDown, IconCoin, IconFlask, IconBook, IconTrophy, IconSoundOn,
 IconSoundOff, IconQuestion, IconStar, IconClock, IconHeart, IconClose, IconTv,
-IconChest, IconLock, IconShirt, IconFire, IconSpark, IconCalendar` —
+IconChest, IconLock, IconShirt, IconFire, IconSpark, IconCalendar, IconUser, IconPlay` —
 пропсы `{ size?: number (16), className?, style?, title? }`, цвет через `color`
 (currentColor). Универсальный вариант: `<PixelIcon name="coin" size={20}/>`.
 
@@ -248,6 +255,7 @@ IconChest, IconLock, IconShirt, IconFire, IconSpark, IconCalendar` —
 ```tsx
 import { sfx } from './design/sfx'
 sfx.tap(); sfx.correct(); sfx.wrong(); sfx.tick(); sfx.reveal(); sfx.fanfare(); sfx.pop()
+sfx.epic(); sfx.legend() // дропы эпик/легенда (арпеджио)
 sfx.setMuted(true); sfx.isMuted() // состояние хранится в localStorage
 ```
 AudioContext создаётся лениво при первом вызове (после жеста пользователя). Мастер-гейн
@@ -258,6 +266,8 @@ import { haptic } from './design/haptics'
 haptic.tap() // 12мс
 haptic.success() // [18,40,24]
 haptic.error() // [42,54,42]
+haptic.epic() // [16,40,16,40,30] — эпический дроп
+haptic.legend() // [24,50,24,50,24,50,64] — легендарный дроп
 ```
 Молча пропускается, если navigator.vibrate недоступен.
 

@@ -1,7 +1,10 @@
-/* WardrobeScreen — гардероб: обёртка над <Wardrobe/> дизайн-системы.
-   Состояние (монеты/инвентарь/экипировка) — в App, экран только
-   управляет табом и зовёт колбэки. Тап по надетому предмету — снять
-   (кроме скина), продажа носимого отсутствует в принципе. */
+/* WardrobeScreen — секция гардероба хаба (виток v1.2): обёртка над
+   <Wardrobe/> дизайн-системы. Состояние (монеты/инвентарь/экипировка)
+   — в App, секция управляет табом и зовёт колбэки. Тап по надетому
+   предмету — снять (кроме скина), продажа носимого отсутствует.
+   Карточка «Магазин сундуков» (жемчужный/золотой) сохранена и как
+   быстрый вход, и для совместимости e2e; полный магазин — секция
+   «Магазин» с деревянным сундуком. */
 
 import { useState } from 'react'
 import { AxolotlCoin } from '../design/axolotl'
@@ -21,6 +24,7 @@ export interface WardrobeScreenProps {
   itemsTotal: number
   /** экипировка из каталога (kind + id; null — снять слот) */
   onEquip: (kind: CosmeticKind, id: string | null) => void
+  /** назад на главную секцию хаба */
   onBack: () => void
   /** покупка сундука за монеты (проверку баланса делает App) */
   onBuyChest: (chest: 'pearl' | 'gold') => void
@@ -38,68 +42,66 @@ export function WardrobeScreen({
   const [tab, setTab] = useState<WardrobeTab>('skins')
 
   return (
-    <div className="scr scr-wardrobe" data-testid="wardrobe-screen">
-      <div className="scr-main">
-        <div className="ward-head">
-          <div data-testid="btn-wardrobe-back">
-            <PixelButton variant="ghost" size="md" onClick={onBack}>
-              В меню
+    <div className="ward-section" data-testid="wardrobe-screen">
+      <div className="ward-head">
+        <div data-testid="btn-wardrobe-back">
+          <PixelButton variant="ghost" size="md" onClick={onBack}>
+            В меню
+          </PixelButton>
+        </div>
+        <h2 className="display ward-title">Гардероб</h2>
+        <span className="ward-coins" data-testid="wardrobe-coins">
+          <AxolotlCoin size={20} />
+          {coins.toLocaleString('ru-RU')}
+        </span>
+      </div>
+
+      <div className="ward-sub">
+        <Badge color="aqua">
+          Предметы: {ownedIds.length}/{itemsTotal}
+        </Badge>
+      </div>
+
+      <Wardrobe
+        skin={equip.skin}
+        hat={equip.hat ?? undefined}
+        acc={equip.acc ?? undefined}
+        ownedIds={ownedIds}
+        tab={tab}
+        onTab={setTab}
+        onEquip={onEquip}
+        previewSize={128}
+      />
+
+      <PixelCard title="Магазин сундуков" accent="gold">
+        <div className="ward-shop">
+          <div data-testid="btn-wardrobe-buy-pearl">
+            <PixelButton
+              variant="gold"
+              size="lg"
+              icon={<IconChest />}
+              disabled={coins < CHEST_PRICES.pearl}
+              onClick={() => onBuyChest('pearl')}
+            >
+              Жемчужный · {CHEST_PRICES.pearl}
             </PixelButton>
           </div>
-          <h2 className="display ward-title">Гардероб</h2>
-          <span className="ward-coins" data-testid="wardrobe-coins">
-            <AxolotlCoin size={20} />
-            {coins.toLocaleString('ru-RU')}
-          </span>
-        </div>
-
-        <div className="ward-sub">
-          <Badge color="aqua">
-            Предметы: {ownedIds.length}/{itemsTotal}
-          </Badge>
-        </div>
-
-        <Wardrobe
-          skin={equip.skin}
-          hat={equip.hat ?? undefined}
-          acc={equip.acc ?? undefined}
-          ownedIds={ownedIds}
-          tab={tab}
-          onTab={setTab}
-          onEquip={onEquip}
-          previewSize={136}
-        />
-
-        <PixelCard title="Магазин сундуков" accent="gold">
-          <div className="ward-shop">
-            <div data-testid="btn-wardrobe-buy-pearl">
-              <PixelButton
-                variant="gold"
-                size="lg"
-                icon={<IconChest />}
-                disabled={coins < CHEST_PRICES.pearl}
-                onClick={() => onBuyChest('pearl')}
-              >
-                Жемчужный · {CHEST_PRICES.pearl}
-              </PixelButton>
-            </div>
-            <div data-testid="btn-wardrobe-buy-gold">
-              <PixelButton
-                variant="gold"
-                size="lg"
-                icon={<IconChest />}
-                disabled={coins < CHEST_PRICES.gold}
-                onClick={() => onBuyChest('gold')}
-              >
-                Золотой · {CHEST_PRICES.gold}
-              </PixelButton>
-            </div>
+          <div data-testid="btn-wardrobe-buy-gold">
+            <PixelButton
+              variant="gold"
+              size="lg"
+              icon={<IconChest />}
+              disabled={coins < CHEST_PRICES.gold}
+              onClick={() => onBuyChest('gold')}
+            >
+              Золотой · {CHEST_PRICES.gold}
+            </PixelButton>
           </div>
-          <p className="ward-hint">
-            Дубль превращается в монеты: 20 · 60 · 200 · 500 — по редкости
-          </p>
-        </PixelCard>
-      </div>
+        </div>
+        <p className="ward-hint">
+          Дубль превращается в монеты: 20 · 60 · 200 · 500 — по редкости
+        </p>
+      </PixelCard>
     </div>
   )
 }

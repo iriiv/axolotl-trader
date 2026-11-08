@@ -1,0 +1,634 @@
+/* ═══════════════════════════════════════════════════════════════
+    ХАБ v1.2 — маскот-центричная главная + нижняя навигация.
+    Каркас: .scr-hub (колонка) → .hub-body (секции, слайд 200мс) →
+    .hub-tabbar (пять пунктов, центр ▶ приподнят). Документ не
+    скроллится никогда — секции скроллятся изнутри.
+    Только var()/color-mix, никаких border-radius/blur.
+    ═══════════════════════════════════════════════════════════════ */
+
+.scr-hub {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.hub-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hub-section-anim {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* каждая секция — ровно экран, внутренний скролл; запас снизу —
+   под приподнятую центральную кнопку ▶ */
+.hub-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 2px 30px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hub-section > * {
+  flex-shrink: 0;
+}
+
+.hub-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hub-section::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 1px solid var(--outline);
+}
+
+.hub-sec-title {
+  font-size: clamp(20px, 6vw, 25px);
+  padding-top: 2px;
+}
+
+.hub-note {
+  font-size: 12.5px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--ink-dim);
+}
+
+/* ═════════════════ ГЛАВНАЯ: сцена-аквариум ═════════════════ */
+
+.hub-home {
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.hub-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hub-logo {
+  margin-top: 0;
+  font-size: clamp(20px, 5.8vw, 27px);
+}
+
+.hub-hello {
+  font-size: clamp(17px, 5vw, 21px);
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+
+.hub-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.hub-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  box-shadow: var(--shadow-1);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.hub-chip--fire {
+  color: var(--pink);
+  border-color: color-mix(in srgb, var(--pink) 42%, var(--line));
+}
+
+.hub-chip--coin {
+  color: var(--gold);
+}
+
+.hub-chip--day {
+  color: var(--ink-dim);
+}
+
+/* daily не сыгран — плашка дня пульсирует золотом (без blur) */
+.hub-chip--pulse {
+  animation: hub-chip-pulse 1.7s var(--ease-inout) infinite;
+}
+
+@keyframes hub-chip-pulse {
+  0%,
+  100% {
+    border-color: var(--line);
+    box-shadow: var(--shadow-1);
+  }
+  50% {
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: var(--shadow-1), 0 0 0 3px color-mix(in srgb, var(--gold) 38%, transparent);
+  }
+}
+
+/* сцена: маскот в центре, флора прижата к низу */
+.hub-scene {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.hub-axo {
+  position: relative;
+  z-index: 1;
+}
+
+.hub-axo .axo {
+  cursor: pointer;
+}
+
+.hub-scene .pxbubble {
+  position: relative;
+  z-index: 1;
+  width: min(320px, 94%);
+  text-align: left;
+}
+
+/* быстрые действия над таб-баром */
+.hub-actions {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding-bottom: 2px;
+}
+
+.hub-actions-row {
+  display: flex;
+  gap: 8px;
+}
+
+.hub-actions-row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+/* inline-регистрация на главной */
+.hub-reg {
+  position: relative;
+  z-index: 1;
+  width: min(400px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 2px solid color-mix(in srgb, var(--aqua) 55%, var(--line));
+  background: color-mix(in srgb, var(--aqua) 7%, var(--panel));
+  box-shadow: var(--shadow-1);
+  text-align: left;
+}
+
+.hub-reg .nick-input {
+  min-height: 54px;
+  font-size: 18px;
+}
+
+/* ═════════════════ ХРОНИКА ДНЯ ═════════════════ */
+
+.hub-daily-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.hub-daily-date {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pink);
+}
+
+.hub-daily-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  color: var(--gold);
+}
+
+/* ═════════════════ ▶ ИГРАТЬ: карточки режимов ═════════════════ */
+
+.hub-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hub-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hub-mode__desc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 20px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-dim);
+}
+
+.hub-mode__desc svg {
+  flex: none;
+}
+
+.hub-mode__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hub-mode__name {
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.hub-mode--locked {
+  opacity: 0.66;
+}
+
+/* ═════════════════ АККАУНТ ═════════════════ */
+
+.hub-acc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hub-acc-nick {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: var(--aqua-hi);
+}
+
+.hub-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.hub-acc-buttons {
+  margin-top: 12px;
+}
+
+.hub-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 46px;
+}
+
+.hub-toggle-row + .hub-toggle-row {
+  border-top: 2px dashed var(--line);
+  margin-top: 4px;
+  padding-top: 8px;
+}
+
+.hub-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.hub-toggle-label svg {
+  color: var(--aqua-hi);
+}
+
+/* дебаг */
+.hub-debug {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hub-debug__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.hub-modal-actions {
+  margin-top: 10px;
+}
+
+/* ═════════════════ МАГАЗИН ═════════════════ */
+
+.hub-shop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hub-shop-head .hub-sec-title {
+  padding-top: 0;
+}
+
+.hub-shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hub-shop-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hub-shop-card__chest {
+  flex: none;
+  display: inline-flex;
+}
+
+.hub-shop-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hub-shop-card__desc {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink-dim);
+}
+
+.hub-shop-card__odds {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hub-odds {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.hub-odds--common {
+  color: var(--ink-dim);
+}
+
+.hub-odds--rare {
+  color: var(--aqua);
+}
+
+.hub-odds--epic {
+  color: var(--epic);
+}
+
+.hub-odds--legend {
+  color: var(--gold);
+}
+
+.hub-odds-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--line);
+}
+
+/* ═════════════════ ГАРДЕРОБ (секция) ═════════════════ */
+
+.ward-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ═════════════════ ТАБ-БАР ═════════════════ */
+
+.hub-tabbar {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  align-items: end;
+  margin-top: 6px;
+  padding: 8px 4px 4px;
+  border-top: 2px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 68%, var(--bg-deep));
+}
+
+.hub-tab {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  min-width: 0;
+}
+
+.hub-tab button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  min-height: 52px;
+  padding: 4px 2px;
+  color: var(--ink-dim);
+  cursor: pointer;
+}
+
+.hub-tab__ico {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  height: 26px;
+  padding: 0 2px;
+}
+
+.hub-tab__label {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.hub-tab__meta {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.hub-tab button:active {
+  transform: translateY(1px);
+}
+
+/* активная вкладка: аква-плашка под иконкой */
+.hub-tab.is-on button {
+  color: var(--aqua-hi);
+}
+
+.hub-tab.is-on .hub-tab__ico {
+  background: color-mix(in srgb, var(--aqua) 20%, var(--panel));
+  border: 2px solid var(--aqua);
+  box-shadow: var(--shadow-1);
+}
+
+.hub-tab.is-on .hub-tab__label {
+  color: var(--aqua-hi);
+}
+
+/* центральная ▶: приподнятая «пиксель-круглая» кнопка 68px.
+   Лифт — через transform: контейнер не сжимается, кнопка честно
+   вылезает над верхней кромкой бара */
+.hub-tab--play {
+  align-self: end;
+}
+
+.hub-tab--play .hub-play {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  min-height: 0;
+  margin-bottom: 4px;
+  padding: 0;
+  transform: translateY(-26px);
+  cursor: pointer;
+}
+
+.hub-tab--play .hub-play__shadow,
+.hub-tab--play .hub-play__face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  clip-path: polygon(
+    30% 0,
+    70% 0,
+    100% 30%,
+    100% 70%,
+    70% 100%,
+    30% 100%,
+    0 70%,
+    0 30%
+  );
+}
+
+.hub-tab--play .hub-play__shadow {
+  background: var(--outline);
+  transform: translate(4px, 4px);
+}
+
+.hub-tab--play .hub-play__face {
+  background: var(--aqua);
+  color: var(--outline);
+  transition: transform var(--dur-mid) var(--ease-spring), background var(--dur-fast) var(--ease-out);
+}
+
+.hub-tab--play .hub-play:active .hub-play__face {
+  transform: translate(3px, 3px);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.hub-tab--play.is-on .hub-play__face {
+  background: var(--gold);
+}
+
+/* ═════════════════ АДАПТИВ ═════════════════ */
+
+@media (max-height: 700px) {
+  .hub-chip {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .hub-scene .pxbubble {
+    width: min(300px, 94%);
+  }
+
+  .hub-tab--play .hub-play {
+    width: 60px;
+    height: 60px;
+    transform: translateY(-20px);
+  }
+}
+
+@media (max-width: 340px) {
+  .hub-tab__label {
+    font-size: 10px;
+  }
+
+  .hub-tab__ico {
+    min-width: 28px;
+  }
+
+  .hub-shop-card {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .hub-shop-card__chest {
+    justify-content: center;
+  }
+
+  .hub-shop-card__odds {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-chip--pulse {
+    animation: none;
+  }
+}

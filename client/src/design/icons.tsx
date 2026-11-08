@@ -27,6 +27,8 @@ export type IconName =
   | 'fire'
   | 'spark'
   | 'calendar'
+  | 'user'
+  | 'play'
 
 const GLYPHS: Record<IconName, string[]> = {
   arrowUp: [
@@ -309,6 +311,34 @@ const GLYPHS: Record<IconName, string[]> = {
     '............',
     '............',
   ],
+  user: [
+    '............',
+    '....####....',
+    '...######...',
+    '...######...',
+    '...######...',
+    '....####....',
+    '............',
+    '..########..',
+    '.##########.',
+    '.##########.',
+    '.##########.',
+    '............',
+  ],
+  play: [
+    '............',
+    '............',
+    '..##........',
+    '..####......',
+    '..######....',
+    '..########..',
+    '..########..',
+    '..######....',
+    '..####......',
+    '..##........',
+    '............',
+    '............',
+  ],
 }
 
 export interface PixelIconProps {
@@ -366,6 +396,8 @@ export const IconShirt = makeIcon('shirt')
 export const IconFire = makeIcon('fire')
 export const IconSpark = makeIcon('spark')
 export const IconCalendar = makeIcon('calendar')
+export const IconUser = makeIcon('user')
+export const IconPlay = makeIcon('play')
 
 /** Универсальный доступ по имени: <PixelIcon name="coin" size={20}/> */
 export function PixelIcon({ name, ...rest }: PixelIconProps & { name: IconName }) {

@@ -1,4 +1,7 @@
-/* Экран ника: аксолотль-читатель + input с валидацией и shake */
+/* Экран регистрации (бывший «ник»): аксолотль машет лапкой +
+   «Как тебя зовут, инвестор?» + input с валидацией и shake.
+   Логика прежняя: ник — префикс для лидерборда (валидация как на
+   сервере), после сабмите — сразу в игру. */
 
 import { useState } from 'react'
 import type { FormEvent } from 'react'
@@ -40,13 +43,15 @@ export function NickScreen({ defaultNick, onSubmit }: NickScreenProps) {
   return (
     <form className="scr scr-nick" onSubmit={handleSubmit}>
       <div className="scr-main">
+        <p className="nick-kicker">Регистрация</p>
         <div className="nick-axo">
-          <Axolotl mood="read" size={120} animated />
-          <SpeechBubble side="left">Как записать тебя в хроники?</SpeechBubble>
+          {/* машет лапкой: приветствие нового инвестора */}
+          <Axolotl mood="idle" size={132} animated className="axo--wave" />
+          <SpeechBubble side="left">Как тебя зовут, инвестор?</SpeechBubble>
         </div>
 
         <label className="nick-label" htmlFor="nick-input">
-          Твой ник трейдера
+          Имя для хроник биржи
         </label>
         <div key={badTries} className={showError ? 'u-shake' : undefined}>
           <input
@@ -72,7 +77,7 @@ export function NickScreen({ defaultNick, onSubmit }: NickScreenProps) {
 
       <div className="scr-foot" data-testid="btn-nick-next">
         <PixelButton variant="primary" size="xl" full disabled={empty} type="submit">
-          Дальше
+          Начать путь
         </PixelButton>
       </div>
     </form>

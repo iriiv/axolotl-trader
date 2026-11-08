@@ -53,8 +53,18 @@ export function ChestScreen({
     if (rolledRef.current) return null // защита от двойного ролла
     rolledRef.current = true
     const result = rollRef.current()
-    sfx.reveal()
-    haptic.success()
+    /* шоу по редкости: легенда — фанфары и длинная хаптика,
+       эпик — своя тема, обычное — привычный ревил */
+    if (result.rarity === 'legend') {
+      sfx.legend()
+      haptic.legend()
+    } else if (result.rarity === 'epic') {
+      sfx.epic()
+      haptic.epic()
+    } else {
+      sfx.reveal()
+      haptic.success()
+    }
     setDrop(result)
     return result
   }
