@@ -8,3 +8,4 @@ server/data/*.db-journal
 server/data/*.db-shm
 server/data/*.db-wal
 .DS_Store
+docs/screenshots/e2e-*.png
