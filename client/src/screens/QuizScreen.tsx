@@ -9,7 +9,9 @@ import { OptionButton } from '../design/ui'
 import type { OptionState } from '../design/ui'
 import { sfx } from '../design/sfx'
 import { haptic } from '../design/haptics'
+import { NewsRecapButton } from '../components/NewsRecap'
 import { GameHeader } from './GameHeader'
+import type { Round } from '../game/types'
 
 export interface QuizScreenProps {
   question: string
@@ -19,6 +21,8 @@ export interface QuizScreenProps {
   pointsLabel: string
   /** карточка-подсказка (mysteryHint) — только для вопроса о компании */
   hintCard?: ReactNode
+  /** новости раунда — кнопка «Перечитать новости» подсказки поверх вопроса */
+  recapNews?: Round['news']
   roundNo: number
   roundsTotal: number
   score: number
@@ -33,6 +37,7 @@ export function QuizScreen({
   correctIndex,
   pointsLabel,
   hintCard,
+  recapNews,
   roundNo,
   roundsTotal,
   score,
@@ -90,6 +95,8 @@ export function QuizScreen({
         <h2 className="display quiz-q">{question}</h2>
 
         {hintCard}
+
+        {recapNews && !locked && <NewsRecapButton news={recapNews} />}
 
         <div className="quiz-grid">
           {options.map((label, i) => (

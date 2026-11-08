@@ -22,7 +22,9 @@
   gap: 14px;
 }
 
-/* середина: единственный скроллируемый контейнер экрана */
+/* середина: единственный скроллируемый контейнер экрана.
+   ВАЖНО: дети не сжимаются (flex-shrink:0) — иначе при переполнении
+   flex давит контент (график сжимался до 22px) вместо прокрутки. */
 .scr-main {
   flex: 1;
   min-height: 0;
@@ -35,6 +37,10 @@
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
   -webkit-overflow-scrolling: touch;
+}
+
+.scr-main > * {
+  flex-shrink: 0;
 }
 
 /* тонкий пиксельный скроллбар (webkit) */
@@ -415,6 +421,23 @@
 
 .quiz-grid .opt__label {
   font-size: 16px;
+}
+
+/* «Перечитать новости» — кнопка-подсказка на квизах и ставке */
+.news-recap {
+  display: flex;
+  justify-content: center;
+}
+
+.news-recap__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.news-recap__list .news-card__text {
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .quiz-points {

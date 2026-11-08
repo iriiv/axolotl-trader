@@ -410,6 +410,7 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
               <p className="intro-hint">{round.mysteryHint}</p>
             </PixelCard>
           }
+          recapNews={round.news}
           onDone={(correct, chosen) =>
             dispatch({
               type: 'answerCompany',
@@ -434,6 +435,7 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
           score={state.score}
           streak={state.streak}
           multiplier={streakMult}
+          recapNews={round.news}
           onDone={(correct, chosen) =>
             dispatch({
               type: 'answerYear',

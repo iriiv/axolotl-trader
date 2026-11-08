@@ -11,6 +11,7 @@ import { haptic } from '../design/haptics'
 import { clamp01 } from '../game/engine'
 import { pickBetPhrase } from '../game/phrases'
 import { PriceChart } from '../components/PriceChart'
+import { NewsRecapButton } from '../components/NewsRecap'
 import { GameHeader } from './GameHeader'
 import type { Direction, Round } from '../game/types'
 
@@ -39,7 +40,12 @@ export function BetScreen({
 }: BetScreenProps) {
   const [chosen, setChosen] = useState<Direction | null>(null)
   const [timedOut, setTimedOut] = useState(false)
+  const [recapOpen, setRecapOpen] = useState(false)
   const startRef = useRef<number>(performance.now())
+  /* пауза таймера на время чтения новостей: копим длительность пауз,
+     чтобы timeLeftRatio не сжигался за шторкой */
+  const pauseStartRef = useRef<number | null>(null)
+  const pauseOffsetRef = useRef(0)
   const phrase = useMemo(() => pickBetPhrase(), [])
   /* на невысоких экранах график компактнее — всё видно без скролла */
   const compact = useMemo(
@@ -49,10 +55,21 @@ export function BetScreen({
 
   const blocked = chosen !== null || timedOut
 
+  const handleRecapOpenChange = (open: boolean) => {
+    setRecapOpen(open)
+    if (open) {
+      pauseStartRef.current = performance.now()
+    } else if (pauseStartRef.current !== null) {
+      pauseOffsetRef.current += performance.now() - pauseStartRef.current
+      pauseStartRef.current = null
+    }
+  }
+
   const handleTap = (dir: Direction) => {
     if (blocked) return
     setChosen(dir)
-    const elapsed = performance.now() - startRef.current
+    const elapsed =
+      performance.now() - startRef.current - pauseOffsetRef.current
     const ratio = clamp01(1 - elapsed / (betSeconds * 1000))
     // пауза, чтобы игрок увидел подсветку выбора
     window.setTimeout(() => onBet(dir, ratio), 450)
@@ -82,6 +99,10 @@ export function BetScreen({
           <p className="bet-sub">Прошлое скрыто. Твоя ставка?</p>
         </div>
 
+        {!blocked && (
+          <NewsRecapButton news={round.news} onOpenChange={handleRecapOpenChange} />
+        )}
+
         <div className="chart-panel">
           <PriceChart
             dates={round.chart.dates}
@@ -108,7 +129,7 @@ export function BetScreen({
         key={`bet-${round.id}`}
         seconds={betSeconds}
         running={!blocked}
-        paused={false}
+        paused={blocked || recapOpen}
         onEnd={handleTimeout}
       />
 
