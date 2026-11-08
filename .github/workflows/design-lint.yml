@@ -1,0 +1,48 @@
+name: Design Lint
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+
+      - name: Install deps
+        run: |
+          npm install --silent
+          npm --prefix client ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Build client
+        run: npm --prefix client run build
+
+      - name: Design lint (правила DESIGN_SYSTEM.md)
+        run: |
+          npm --prefix client run preview -- --port 4173 --strictPort &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173/ >/dev/null && break; sleep 2; done
+          E2E_BASE=http://localhost:4173 node scripts/design-lint.mjs --json > lint-report.json
+          node -e "const r=require('./lint-report.json'); console.log('FAIL:', r.summary.totalFail, 'WARN:', r.summary.totalWarn); process.exit(r.summary.totalFail > 0 ? 1 : 0)"
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-lint-report
+          path: lint-report.json

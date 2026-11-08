@@ -61,8 +61,8 @@
 }
 
 .hub-sec-title {
-  font-size: clamp(20px, 6vw, 25px);
-  padding-top: 2px;
+  font-size: 25px;
+  padding-top: 4px;
 }
 
 .hub-note {
@@ -88,13 +88,15 @@
   gap: 4px;
 }
 
-.hub-logo {
+/* логотип хаба — Tiny5 строго из шкалы §2 (30px); повышенная
+   специфичность, чтобы перекрыть .title-logo из screens.css */
+.scr-hub .hub-logo {
   margin-top: 0;
-  font-size: clamp(20px, 5.8vw, 27px);
+  font-size: 30px;
 }
 
 .hub-hello {
-  font-size: clamp(17px, 5vw, 21px);
+  font-size: 20px;
   letter-spacing: 0.05em;
   color: var(--ink);
 }
@@ -193,7 +195,7 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  padding-bottom: 2px;
+  padding-bottom: 4px;
 }
 
 .hub-actions-row {

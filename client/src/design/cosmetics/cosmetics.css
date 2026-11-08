@@ -189,6 +189,12 @@
   box-shadow: var(--shadow-1);
 }
 
+/* пиксель-галка ≥16px (DESIGN_SYSTEM §7, читаемость метки) */
+.cos-card__check svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* искры на легендарной карточке */
 .cos-card__spark {
   position: absolute;
@@ -666,8 +672,13 @@
 }
 
 .daily__tick svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
+}
+
+.daily__dir svg {
+  width: 16px;
+  height: 16px;
 }
 
 .daily__dir {
