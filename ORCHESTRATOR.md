@@ -23,7 +23,7 @@ React (Vite) фронт под WebView/тач + Express + SQLite бек + лид
 3. **W3**: 🧪 Тестировщик (после интеграции)
 4. **W4**: оркестратор — полировка визуала, README
 
-Статус: 🎨 done → ⚙️ done → 💻 done → 🧪 в работе → ✅ первый деплой уже живой
+Статус: 🎨 done → ⚙️ done → 💻 done → 🧪 done (305/305 PASS, вердикт GO) → ✅ MVP задеплоен
 
 > Деплой: https://iriiv.github.io/axolotl-trader/ (CI собирает клиент и пушит в ветку `gh-pages`)
 > Презентация: https://iriiv.github.io/axolotl-trader/presentation.html · План «MVP → продукт»: ROADMAP.md
