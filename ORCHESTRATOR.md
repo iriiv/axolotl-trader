@@ -12,9 +12,11 @@ React (Vite) фронт под WebView/тач + Express + SQLite бек + лид
 | ⚙️ **Бекендер** | Express API, SQLite, лидерборд, сборка данных | `server/*` |
 | 💻 **Фронтендер** | экраны, игровой цикл, пиксель-графики, анимации | `client/src/{screens,game,api*,App*}` |
 | 🧪 **Тестировщик** | сборка, smoke API, целостность контента, отчёт | `TEST_REPORT.md`, точечные фиксы |
+| 🔍 **Ревьюер дизайна** | сверка экранов с DESIGN_SYSTEM.md (design-lint), аудит | `DESIGN_AUDIT.md`, `scripts/design-lint.mjs` |
 
 Оркестратор (главный агент) — владеет `ORCHESTRATOR.md`, контентом раундов
 (`server/content/rounds.json`), интеграцией и финальной полировкой.
+**Правило качества (с v1.3): каждый визуальный виток проходит design-lint ревьюера до деплоя.**
 
 ## Волны запуска
 
