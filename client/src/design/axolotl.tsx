@@ -4,6 +4,10 @@
    • idle: бобинг + авто-моргание + покачивание жабр (2 кадра)
    • cheer: прыжок + искры;  sad: жабры опущены + слёзы
    Размер задаётся пропом size (ширина в px, высота = size × 22/26).
+   Кастомизация (аддитивно, см. cosmetics/sprites.ts):
+   • skin — палитровый ремап легенды (голограмма — 3 кадра перелива)
+   • hat  — матрица шляпы поверх темечка (viewBox растёт вверх на lift)
+   • acc  — аксессуар (бабочка/очки/монокль/галстук/портфель/лазер)
    ═══════════════════════════════════════════════════════════════ */
 
 import { useEffect, useState } from 'react'
@@ -17,15 +21,37 @@ import {
   COIN_LEGEND,
 } from './axolotl-data'
 import type { AxolotlMood } from './axolotl-data'
+import {
+  ACC_FRAMES,
+  ACC_LEGENDS,
+  ACC_LAYOUT,
+  ACC_SPRITES,
+  HAT_LEGENDS,
+  HAT_LAYOUT,
+  HAT_SPRITES,
+  SKIN_HOLO_FRAMES,
+  SKIN_PALETTE,
+  resolveSkinLegend,
+  skinHoloLegends,
+} from './cosmetics/sprites'
+
+/* реестры косметики — удобный реэкспорт для фронтендера */
+export { SKIN_PALETTE, HAT_SPRITES, ACC_SPRITES } from './cosmetics/sprites'
 
 export type { AxolotlMood }
 
 export interface AxolotlProps {
   mood?: AxolotlMood
-  /** ширина в px (высота масштабируется 22/26) */
+  /** ширина в px (высота масштабируется 22/26 + lift шляпы) */
   size?: number
   animated?: boolean
   flip?: boolean
+  /** id скина из каталога (например 'skin-gold'); контур не трогается */
+  skin?: string
+  /** id шляпы из каталога (например 'hat-crown') */
+  hat?: string
+  /** id аксессуара из каталога (например 'acc-laser') */
+  acc?: string
   className?: string
   style?: CSSProperties
   onClick?: () => void
@@ -35,6 +61,33 @@ interface LayerProps {
   rows: string[]
   legend: Record<string, string>
   className?: string
+}
+
+interface WornSprite {
+  rows: string[]
+  legend: Record<string, string>
+  x: number
+  y: number
+  lift?: number
+  frames?: Record<string, string>[]
+}
+
+/** Разрешает надетое: skin → легенда, hat/acc → матрица+посадка */
+function resolveWorn(hat: string | undefined, acc: string | undefined) {
+  const hatDef: WornSprite | null =
+    hat && HAT_SPRITES[hat]
+      ? { rows: HAT_SPRITES[hat], legend: HAT_LEGENDS[hat], ...HAT_LAYOUT[hat] }
+      : null
+  const accDef: WornSprite | null =
+    acc && ACC_SPRITES[acc]
+      ? {
+          rows: ACC_SPRITES[acc],
+          legend: ACC_LEGENDS[acc],
+          ...ACC_LAYOUT[acc],
+          frames: ACC_FRAMES[acc],
+        }
+      : null
+  return { hatDef, accDef }
 }
 
 /** Рисует матрицу строк как набор <rect 1×1> */
@@ -72,6 +125,9 @@ export function Axolotl({
   size = 120,
   animated = true,
   flip = false,
+  skin,
+  hat,
+  acc,
   className,
   style,
   onClick,
@@ -92,6 +148,13 @@ export function Axolotl({
 
   const frame = blinking ? AXO_MOODS.blink : AXO_MOODS[mood]
 
+  /* кастомизация: легенда скина (голограмма — 3 кадра) + шляпа/аксессуар */
+  const hasSkin = !!(skin && (skin in SKIN_PALETTE || skin in SKIN_HOLO_FRAMES))
+  const legend = hasSkin ? resolveSkinLegend(skin) : AXO_LEGEND
+  const holoLegends = hasSkin ? skinHoloLegends(skin) : null
+  const { hatDef, accDef } = resolveWorn(hat, acc)
+  const lift = hatDef?.lift ?? 0
+
   return (
     <div
       className={[
@@ -103,26 +166,91 @@ export function Axolotl({
       ]
         .filter(Boolean)
         .join(' ')}
-      style={{ width: size, height: Math.round((size * 22) / 26), ...style }}
+      style={{ width: size, height: Math.round((size * (22 + lift)) / 26), ...style }}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       aria-label={onClick ? `Аксолотль: ${mood}` : undefined}
     >
       <div className="axo-bob">
         <div className="axo-act">
-          <svg viewBox="0 0 26 22" width="100%" height="100%" shapeRendering="crispEdges">
-            {/* жабры — позади тела, 2 кадра колыхания */}
-            <g className="axo-gills axo-gills--l">
-              <PixelLayer rows={AXO_GILLS_A} legend={AXO_LEGEND} />
-              <PixelLayer rows={AXO_GILLS_B} legend={AXO_LEGEND} className="axo-gill-b" />
-            </g>
-            <g className="axo-gills axo-gills--r">
-              <PixelLayer rows={AXO_GILLS_A} legend={AXO_LEGEND} />
-              <PixelLayer rows={AXO_GILLS_B} legend={AXO_LEGEND} className="axo-gill-b" />
-            </g>
+          <svg
+            viewBox={`0 ${-lift} 26 ${22 + lift}`}
+            width="100%"
+            height="100%"
+            shapeRendering="crispEdges"
+          >
+            {/* жабры — позади тела, 2 кадра колыхания (скин ремапит и их) */}
+            {holoLegends ? (
+              <>
+                <g className="axo-gills axo-gills--l">
+                  {holoLegends.map((lg, i) => (
+                    <PixelLayer
+                      key={i}
+                      rows={AXO_GILLS_A}
+                      legend={lg}
+                      className={`axo-holo-f${i}`}
+                    />
+                  ))}
+                </g>
+                <g className="axo-gills axo-gills--r">
+                  {holoLegends.map((lg, i) => (
+                    <PixelLayer
+                      key={i}
+                      rows={AXO_GILLS_A}
+                      legend={lg}
+                      className={`axo-holo-f${i}`}
+                    />
+                  ))}
+                </g>
+              </>
+            ) : (
+              <>
+                <g className="axo-gills axo-gills--l">
+                  <PixelLayer rows={AXO_GILLS_A} legend={legend} />
+                  <PixelLayer rows={AXO_GILLS_B} legend={legend} className="axo-gill-b" />
+                </g>
+                <g className="axo-gills axo-gills--r">
+                  <PixelLayer rows={AXO_GILLS_A} legend={legend} />
+                  <PixelLayer rows={AXO_GILLS_B} legend={legend} className="axo-gill-b" />
+                </g>
+              </>
+            )}
 
-            {/* тело + лицо (настроение) */}
-            <PixelLayer rows={frame} legend={AXO_LEGEND} className="axo-body" />
+            {/* тело + лицо (настроение); голограмма — 3 слоя-кадра */}
+            {holoLegends ? (
+              holoLegends.map((lg, i) => (
+                <PixelLayer key={i} rows={frame} legend={lg} className={`axo-holo-f${i}`} />
+              ))
+            ) : (
+              <PixelLayer rows={frame} legend={legend} className="axo-body" />
+            )}
+
+            {/* шляпа: поверх темечка, 1 юнит = 1 пиксель сетки */}
+            {hatDef && (
+              <g className="axo-hat" transform={`translate(${hatDef.x} ${hatDef.y})`}>
+                <PixelLayer rows={hatDef.rows} legend={hatDef.legend} />
+              </g>
+            )}
+
+            {/* аксессуар: очки/монокль/лазер — на глаза, бабочка/галстук —
+                ниже рта, портфель — у лапки; лазер мерцает 2 кадрами */}
+            {accDef && (
+              <g
+                className={`axo-acc${accDef.frames ? ' axo-acc--laser' : ''}`}
+                transform={`translate(${accDef.x} ${accDef.y})`}
+              >
+                {accDef.frames
+                  ? accDef.frames.map((lg, i) => (
+                      <PixelLayer
+                        key={i}
+                        rows={accDef.rows}
+                        legend={lg}
+                        className={i === 0 ? 'acc-laser-a' : 'acc-laser-b'}
+                      />
+                    ))
+                  : <PixelLayer rows={accDef.rows} legend={accDef.legend} />}
+              </g>
+            )}
 
             {/* слёзы (sad) */}
             {mood === 'sad' && (

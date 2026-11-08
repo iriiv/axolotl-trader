@@ -17,9 +17,10 @@
 | `axolotl-data.ts` | пиксель-матрицы маскота (26×22) и монеты (12×12), легенда символов |
 | `axolotl.tsx` / `axolotl.css` | компоненты `<Axolotl/>`, `<AxolotlCoin/>` и их анимации |
 | `ui.tsx` / `ui.css` | UI-кит: кнопки, карточки, таймер, модалка и т.д. |
-| `icons.tsx` | 13 пиксель-иконок 12×12 (инлайн-SVG, currentColor) |
+| `icons.tsx` | 20 пиксель-иконок 12×12 (инлайн-SVG, currentColor) |
 | `sfx.ts` | 8-bit звуки на WebAudio, без ассетов |
 | `haptics.ts` | вибрация через navigator.vibrate с guard'ами |
+| `cosmetics/` | каталог косметики, сундуки, гардероб, дроп, daily-карточка (см. ниже) |
 | `DesignDemo.tsx` / `demo.css` | живой стайлгайд — все компоненты и состояния |
 
 ---
@@ -63,12 +64,107 @@ import { Axolotl, AxolotlCoin } from './design/axolotl'
   - `wow` — широкие глаза 4px, рот «о», тремор масштаба;
   - `read` — пиксель-очки, газета в лапках;
   - `blink` — закрытые глаза (кадр для ручного моргания).
-- **size** — ширина в px (высота = size·22/26), **animated** — выключает все анимации,
-  **flip** — отзеркалить, **onClick** — превращает в кнопку (доступность включена).
+- **size** — ширина в px (высота = size·22/26 + `lift` надетой шляпы), **animated** —
+  выключает все анимации, **flip** — отзеркалить, **onClick** — превращает в кнопку
+  (доступность включена).
+- **Кастомизация** (опционально, обратно совместимо): `skin` / `hat` / `acc` — id
+  предметов из каталога косметики, например
+  `<Axolotl mood="cheer" skin="skin-gold" hat="hat-crown" acc="acc-bow"/>`.
+  Скин ремапит палитру легенды (контур не трогает; `skin-holo` — 3 кадра перелива),
+  шляпа/аксессуар рисуются матрицами поверх спрайта (см. раздел «Кастомизация»).
 - Слои анимаций развязаны: `axo-bob` (бобинг) → `axo-act` (прыжок/тремор) → svg →
   группы жабр/тела — состояния не конфликтуют.
 - Матрицы: `axolotl-data.ts`, символ = цвет из `AXO_LEGEND`. Менять внешность — правь
   матрицы (строки строго 26 символов × 22). `AXO_COIN`/`COIN_LEGEND` — монета «₽».
+
+---
+
+## Кастомизация и сундуки (`cosmetics/`)
+
+Каталог предметов (id/название/редкость/описание), спрайты и презентационные каркасы.
+Экономика, инвентарь и дропы — на стороне игровой логики, здесь только ассеты и UI.
+Импорты: `import { … } from './design/cosmetics'` (барел `cosmetics/index.ts`).
+
+### Редкости
+
+`starter · common · rare · epic · legend` — тип `Rarity`, подписи `RARITY_LABEL`,
+CSS-класс `rarityClass(r)` вешает `--rr` (цвет рамок/плашек) и `--rr-soft` (фон).
+Цвета: серый `ink-dim` → `aqua` → `--epic #ff7ac8` (токен) → `gold` (+искры/перелив).
+
+### Каталог (`cosmetics/catalog.ts`)
+
+Тип `CosmeticItem { id, kind, name, rarity, desc }`, списки `SKINS`, `HATS`, `ACCS`,
+словарь `COSMETICS_BY_ID`. Табличка id → редкость:
+
+| Скины | Шляпы | Аксессуары |
+|---|---|---|
+| skin-classic · старт | hat-cap · common | acc-bow · common |
+| skin-albino · common | hat-panama · common | acc-glasses · common |
+| skin-lime · common | hat-bandana · common | acc-monocle · rare |
+| skin-aqua · rare | hat-cylinder · rare | acc-tie · rare |
+| skin-lavender · rare | hat-headphones · rare | acc-briefcase · epic |
+| skin-gold · epic | hat-hardhat · rare | acc-laser · legend |
+| skin-cyber · epic | hat-crown · epic | |
+| skin-holo · legend | hat-wizard · epic | |
+| | hat-bull · legend | |
+
+Скины — объекты `Partial<Record<ключ легенды, цвет>>` (реестр `SKIN_PALETTE`,
+голограмма — 3 кадра в `SKIN_HOLO_FRAMES`), контур `O` не ремапится (кроме holo).
+Шляпы — матрицы `HAT_SPRITES` (~13×6, легенды `HAT_LEGENDS`), посадка `HAT_LAYOUT`
+(`x`/`y` — левый-верхний угол в сетке 26×22, `lift` — строки выше y=0: viewBox
+расширяется вверх, пропорции сохраняются). Якорь шляп — top-center темечка
+(верх головы ≈ y=0..4, центр x≈12.5, посадочные x=6 у 13-шторных, x=2 у наушников,
+x=5 у рогов). Аксессуары — `ACC_SPRITES` + `ACC_LEGENDS` + `ACC_LAYOUT`; позиции
+фиксированы: очки/монокль/лазер — зона глаз (y=4..9), бабочка/галстук — под ртом
+по центру (y=12+), портфель — у левой лапки (x=1, y=12). Многокадровые (мерцание
+лазера) — `ACC_FRAMES`. Всё это реэкспортировано и из `axolotl.tsx`:
+`SKIN_PALETTE, HAT_SPRITES, ACC_SPRITES`.
+
+### Сундук и дроп
+
+```tsx
+import { Chest, ChestOpen, DropReveal } from './design/cosmetics'
+
+<Chest type="gold" open={opened} animated size={120} onClick={…} />
+<ChestOpen chest="pearl" item={drop} opened duplicateCoins={150}
+           onOpen={…} onEquip={…} onTake={…} size={160} />
+<DropReveal item={item} size={92} duplicateCoins={240} />
+```
+
+- **Chest** — типы `wooden | pearl | gold` (`CHESTS`, `CHEST_LEGENDS`, спрайты
+  `CHEST_LID/BASE/INSIDE/RAYS` в `chests.ts`, viewBox «0 -8 22 24»). Закрытый
+  «дышит»; при `open` — тряска → крышка откидывается (CSS-пружина на svg-группе)
+  → светящаяся внутренность + веер лучей (у gold — искры).
+- **ChestOpen** — каркас экрана: сундук + кнопка «ОТКРЫТЬ», после открытия
+  `DropReveal` и слоты «ЭКИПИРОВАТЬ»/«ЗАБРАТЬ» (колбэки обязательные по смыслу,
+  состояние открыто/дроп — снаружи).
+- **DropReveal** — лучи редкости за предметом (легенда — вращающиеся), крупная
+  иконка `ItemIcon`, имя + плашка редкости (легенда — перелив), искры легенды,
+  плашка «+N ⬤» компенсации за дубликат (монета-иконка + число).
+
+### Гардероб и карточки
+
+```tsx
+import { Wardrobe, ItemCard, ItemIcon, DailyResultCard } from './design/cosmetics'
+
+<Wardrobe skin={s} hat={h} acc={a} ownedIds={owned} tab="hats"
+          onTab={setTab} onEquip={(kind, id) => …} previewSize={150} />
+<ItemCard item={item} owned equipped onEquip={…} />
+<DailyResultCard dayNo={17} cells={cells} streakDays={4} coins={350} dateLabel="8 ноября" />
+```
+
+- **Wardrobe** — превью аксолотля с надетым + чипы, табы «Скины|Шляпы|Аксессуары»,
+  сетка `ItemCard`. Состояние снаружи: `skin/hat/acc/ownedIds/tab` — пропсы,
+  `onEquip(kind, id | null)` (null = снять слот), `onTab(tab)`; без `onTab` таб
+  ведётся внутренним стейтом. «Снять» появляется для шляп/аксессуаров.
+- **ItemCard** — рамка/плашка цвета редкости, пиксель-иконка, имя; epic/legend —
+  лучи за иконкой (legend — ещё искры и перелив по рамке); `owned=false` —
+  силуэт + замок; `equipped` — пиксель-галка.
+- **ItemIcon** — иконка предмета: скин → мини-морда в цветах скина (holo → 1-й кадр),
+  шляпа/аксессуар → матрица 1:1; `silhouette` — серый силуэт для locked.
+- **DailyResultCard** — итог daily-режима: «Хроника №N» (+`dateLabel`-чип), сетка
+  3 ячеек `{ ticker, year, hit, up }` (✓/✗ пиксель-метки + ▲/▼ цветами up/down),
+  стрик-пламя с числом дней, монеты за день.
 
 ---
 
@@ -140,7 +236,8 @@ overshoot, пиксель-шапка, крестик 52×52, Escape/клик п�
 
 ### Иконки (icons.tsx)
 `IconArrowUp, IconArrowDown, IconCoin, IconFlask, IconBook, IconTrophy, IconSoundOn,
-IconSoundOff, IconQuestion, IconStar, IconClock, IconHeart, IconClose` —
+IconSoundOff, IconQuestion, IconStar, IconClock, IconHeart, IconClose, IconTv,
+IconChest, IconLock, IconShirt, IconFire, IconSpark, IconCalendar` —
 пропсы `{ size?: number (16), className?, style?, title? }`, цвет через `color`
 (currentColor). Универсальный вариант: `<PixelIcon name="coin" size={20}/>`.
 

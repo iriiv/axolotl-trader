@@ -32,17 +32,37 @@ import {
   IconArrowDown,
   IconArrowUp,
   IconBook,
+  IconCalendar,
+  IconChest,
   IconClock,
   IconClose,
   IconCoin,
+  IconFire,
   IconFlask,
   IconHeart,
+  IconLock,
   IconQuestion,
+  IconShirt,
   IconSoundOff,
   IconSoundOn,
+  IconSpark,
   IconStar,
   IconTrophy,
 } from './icons'
+import {
+  ACCS,
+  CHESTS,
+  COSMETICS_BY_ID,
+  Chest,
+  ChestOpen,
+  DailyResultCard,
+  DropReveal,
+  HATS,
+  ItemCard,
+  SKINS,
+  Wardrobe,
+} from './cosmetics'
+import type { ChestType, CosmeticKind } from './cosmetics'
 
 const MOODS: AxolotlMood[] = ['idle', 'cheer', 'sad', 'wow', 'read', 'blink']
 const MOOD_LABEL: Record<AxolotlMood, string> = {
@@ -53,6 +73,22 @@ const MOOD_LABEL: Record<AxolotlMood, string> = {
   read: 'read',
   blink: 'blink',
 }
+
+/* демо-данные секции «Кастомизация» (без игровой логики) */
+const CHEST_TYPES: ChestType[] = ['wooden', 'pearl', 'gold']
+const DEMO_OWNED = [...SKINS, ...HATS, ...ACCS].map((i) => i.id).filter((id) => id !== 'hat-wizard')
+const DEMO_DROPS = [
+  COSMETICS_BY_ID['hat-cap'],
+  COSMETICS_BY_ID['acc-monocle'],
+  COSMETICS_BY_ID['skin-gold'],
+  COSMETICS_BY_ID['acc-briefcase'],
+  COSMETICS_BY_ID['hat-bull'],
+]
+const DEMO_DAILY = [
+  { ticker: 'AFLT', year: 2020, hit: true, up: true },
+  { ticker: 'SBER', year: 2014, hit: true, up: false },
+  { ticker: 'LKOH', year: 2008, hit: false, up: true },
+]
 
 const PALETTE: Array<[string, string]> = [
   ['bg-deep', 'var(--bg-deep)'],
@@ -104,6 +140,24 @@ export function DesignDemo() {
   const [modalOpen, setModalOpen] = useState(false)
   const [muted, setMuted] = useState(sfx.isMuted())
   useEffect(() => sfx.setMuted(muted), [muted])
+
+  /* кастомизация: что надето (состояние — «снаружи» компонентов) */
+  const [cSkin, setCSkin] = useState('skin-gold')
+  const [cHat, setCHat] = useState<string | undefined>(undefined)
+  const [cAcc, setCAcc] = useState<string | undefined>(undefined)
+  const equip = (kind: CosmeticKind, id: string | null) => {
+    if (kind === 'skin') setCSkin(id ?? 'skin-classic')
+    else if (kind === 'hat') setCHat(id ?? undefined)
+    else setCAcc(id ?? undefined)
+  }
+
+  /* демо открытия сундука: дроп идёт по кругу */
+  const [chestOpened, setChestOpened] = useState(false)
+  const [dropIdx, setDropIdx] = useState(0)
+  const resetChest = () => {
+    setChestOpened(false)
+    setDropIdx((i) => (i + 1) % DEMO_DROPS.length)
+  }
 
   return (
     <div className="u-pop-in">
@@ -204,6 +258,139 @@ export function DesignDemo() {
           </p>
         </div>
       </PixelCard>
+
+      {/* ═══ КАСТОМИЗАЦИЯ ═══ */}
+      <h2 className="demo-h2">Кастомизация</h2>
+      <p className="demo-note">
+        Скины — палитровые ремапы легенды спрайта, шляпы/аксессуары — матрицы поверх
+        аксолотля. Каталог, сундуки и гардероб — presentation-only: экономику и инвентарь
+        подключает фронтендер.
+      </p>
+
+      <PixelCard title="Гардероб" accent="pink">
+        <Wardrobe skin={cSkin} hat={cHat} acc={cAcc} ownedIds={DEMO_OWNED} onEquip={equip} />
+      </PixelCard>
+
+      <div className="demo-col">
+        <PixelCard title="Все скины" accent="aqua">
+          <div className="cos-demo-row">
+            {SKINS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={`cos-demo-cell${cSkin === s.id ? ' is-on' : ''}`}
+                onClick={() => setCSkin(s.id)}
+                title={s.desc}
+              >
+                <Axolotl skin={s.id} size={62} animated={false} />
+                <span>{s.name}</span>
+              </button>
+            ))}
+          </div>
+        </PixelCard>
+
+        <PixelCard title="Все шляпы" accent="gold">
+          <div className="cos-demo-row">
+            {HATS.map((h) => (
+              <button
+                key={h.id}
+                type="button"
+                className={`cos-demo-cell${cHat === h.id ? ' is-on' : ''}`}
+                onClick={() => setCHat(h.id)}
+                title={h.desc}
+              >
+                <Axolotl skin="skin-classic" hat={h.id} size={56} animated={false} />
+                <span>{h.name}</span>
+              </button>
+            ))}
+          </div>
+        </PixelCard>
+
+        <PixelCard title="Все аксессуары" accent="up">
+          <div className="cos-demo-row">
+            {ACCS.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                className={`cos-demo-cell${cAcc === a.id ? ' is-on' : ''}`}
+                onClick={() => setCAcc(a.id)}
+                title={a.desc}
+              >
+                <Axolotl skin="skin-classic" acc={a.id} size={56} animated={false} />
+                <span>{a.name}</span>
+              </button>
+            ))}
+          </div>
+        </PixelCard>
+      </div>
+
+      <PixelCard title="Смоук: gold + корона + бабочка" accent="pink">
+        <div className="axo-stage">
+          <Axolotl skin="skin-gold" hat="hat-crown" acc="acc-bow" size={150} />
+        </div>
+      </PixelCard>
+
+      <PixelCard title="Сундуки" accent="gold" glow>
+        <div className="cos-demo-row">
+          {CHEST_TYPES.map((t) => (
+            <div className="cos-demo-cell" key={t}>
+              <Chest type={t} open={false} size={96} />
+              <span>{CHESTS[t].name}</span>
+            </div>
+          ))}
+        </div>
+        <div className="cos-demo-row">
+          {CHEST_TYPES.map((t) => (
+            <div className="cos-demo-cell" key={`open-${t}`}>
+              <Chest type={t} open size={96} />
+              <span>{CHESTS[t].name} · открыт</span>
+            </div>
+          ))}
+        </div>
+        <Divider />
+        <ChestOpen
+          chest="gold"
+          opened={chestOpened}
+          item={DEMO_DROPS[dropIdx]}
+          duplicateCoins={dropIdx % 2 === 1 ? 150 : null}
+          onOpen={() => {
+            setChestOpened(true)
+            sfx.reveal()
+            haptic.success()
+          }}
+          onEquip={() => {
+            const drop = DEMO_DROPS[dropIdx]
+            equip(drop.kind, drop.id)
+            resetChest()
+          }}
+          onTake={resetChest}
+        />
+      </PixelCard>
+
+      <PixelCard title="Редкости и дроп" accent="aqua">
+        <div className="cos-demo-grid">
+          <ItemCard item={COSMETICS_BY_ID['skin-classic']} equipped />
+          <ItemCard item={COSMETICS_BY_ID['hat-cap']} />
+          <ItemCard item={COSMETICS_BY_ID['acc-monocle']} />
+          <ItemCard item={COSMETICS_BY_ID['hat-crown']} />
+          <ItemCard item={COSMETICS_BY_ID['acc-laser']} />
+          <ItemCard item={COSMETICS_BY_ID['hat-wizard']} owned={false} />
+        </div>
+        <Divider />
+        <DropReveal
+          item={COSMETICS_BY_ID['skin-holo']}
+          duplicateCoins={240}
+        />
+      </PixelCard>
+
+      <h2 className="demo-h2">Итог дня (daily)</h2>
+      <DailyResultCard
+        dayNo={17}
+        cells={DEMO_DAILY}
+        streakDays={4}
+        coins={350}
+        dateLabel="8 ноября"
+      />
 
       {/* ═══ КВИЗ ═══ */}
       <h2 className="demo-h2">Варианты ответа</h2>
@@ -432,6 +619,12 @@ export function DesignDemo() {
         <div className="icon-cell"><IconClock /><span>clock</span></div>
         <div className="icon-cell icon-cell--pink"><IconHeart /><span>heart</span></div>
         <div className="icon-cell"><IconClose /><span>close</span></div>
+        <div className="icon-cell icon-cell--gold"><IconChest /><span>chest</span></div>
+        <div className="icon-cell"><IconLock /><span>lock</span></div>
+        <div className="icon-cell"><IconShirt /><span>shirt</span></div>
+        <div className="icon-cell icon-cell--gold"><IconFire /><span>fire</span></div>
+        <div className="icon-cell icon-cell--gold"><IconSpark /><span>spark</span></div>
+        <div className="icon-cell"><IconCalendar /><span>calendar</span></div>
       </div>
 
       {/* ═══ ФИНАЛ ═══ */}

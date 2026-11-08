@@ -1,0 +1,717 @@
+/* ═══════════════════════════════════════════════════════════════
+   Стили системы кастомизации: редкости, карточки предметов,
+   гардероб, сундуки, ревил дропа, карточка дня.
+   Графика ретро, ДВИЖЕНИЕ плавное — как во всей дизайн-системе.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── редкости: каждый класс вешает --rr (акцент) и --rr-soft (фон) ── */
+.rr--starter {
+  --rr: var(--ink-dim);
+  --rr-soft: color-mix(in srgb, var(--ink-dim) 10%, var(--panel));
+}
+
+.rr--common {
+  --rr: var(--ink-dim);
+  --rr-soft: color-mix(in srgb, var(--ink-dim) 10%, var(--panel));
+}
+
+.rr--rare {
+  --rr: var(--aqua);
+  --rr-soft: color-mix(in srgb, var(--aqua) 10%, var(--panel));
+}
+
+.rr--epic {
+  --rr: var(--epic);
+  --rr-soft: color-mix(in srgb, var(--epic) 10%, var(--panel));
+}
+
+.rr--legend {
+  --rr: var(--gold);
+  --rr-soft: color-mix(in srgb, var(--gold) 12%, var(--panel));
+}
+
+/* ═════════════════ ПРЕДМЕТНАЯ КАРТОЧКА ═════════════════ */
+
+.cos-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 6px 9px;
+  border: 2px solid color-mix(in srgb, var(--rr) 55%, var(--line));
+  background: var(--panel);
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+  color: var(--ink);
+  min-height: 52px;
+}
+
+.cos-card:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--outline);
+}
+
+/* эпик/легенда: лучи за иконкой (жёсткие, без blur) */
+.cos-card__burst {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  margin-left: -32px;
+  background: repeating-conic-gradient(
+    var(--rr) 0deg 9deg,
+    transparent 9deg 27deg
+  );
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+.cos-card--legend .cos-card__burst {
+  opacity: 0.2;
+  animation: cos-burst-spin 12s linear infinite;
+}
+
+@keyframes cos-burst-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* легенда: перелившаяся полоска по рамке */
+.cos-card--legend::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid transparent;
+  background: repeating-linear-gradient(
+      55deg,
+      var(--gold) 0 10px,
+      color-mix(in srgb, var(--aqua) 70%, var(--gold)) 10px 20px,
+      var(--pink) 20px 30px
+    )
+    border-box;
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: cos-shimmer 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes cos-shimmer {
+  to {
+    background-position: 60px 0;
+  }
+}
+
+.cos-card__ico {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  color: var(--ink);
+}
+
+/* силуэт незакупленного: все пиксели одним тусклым цветом */
+.cos-sil rect {
+  fill: color-mix(in srgb, var(--ink-dim) 42%, var(--panel));
+}
+
+.cos-card__name {
+  font-family: var(--font-display);
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--ink);
+}
+
+.cos-card__rar {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--rr);
+}
+
+/* locked: замок поверх силуэта */
+.cos-card--locked {
+  cursor: default;
+}
+
+.cos-card--locked .cos-card__name,
+.cos-card--locked .cos-card__rar {
+  color: var(--ink-dim);
+}
+
+.cos-card--locked:active {
+  transform: none;
+  box-shadow: var(--shadow-1);
+}
+
+.cos-card__lock {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--ink-dim);
+}
+
+.cos-card__lock svg {
+  background: var(--panel);
+  border: 2px solid var(--line);
+  box-shadow: var(--shadow-1);
+  padding: 3px;
+}
+
+/* equipped: галка-пиксель в углу */
+.cos-card--equipped {
+  border-color: var(--rr);
+  background: var(--rr-soft);
+}
+
+.cos-card__check {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  background: var(--up);
+  color: var(--outline);
+  border: 2px solid var(--outline);
+  box-shadow: var(--shadow-1);
+}
+
+/* искры на легендарной карточке */
+.cos-card__spark {
+  position: absolute;
+  z-index: 2;
+  color: var(--gold);
+  opacity: 0;
+  animation: cos-twinkle 1.7s var(--ease-out) infinite;
+  pointer-events: none;
+}
+
+.cos-card__spark--1 {
+  top: 2px;
+  left: 4px;
+}
+
+.cos-card__spark--2 {
+  bottom: 22px;
+  right: 3px;
+  animation-delay: 0.6s;
+}
+
+@keyframes cos-twinkle {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.15) rotate(20deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1) rotate(20deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(35deg);
+  }
+}
+
+/* ═════════════════ ГАРДЕРОБ ═════════════════ */
+
+.wrd {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wrd__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 8px 4px;
+}
+
+.wrd__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.wrd__tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.wrd__tab {
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: 2px solid var(--outline);
+  background: var(--panel);
+  color: var(--ink-dim);
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+}
+
+.wrd__tab.is-on {
+  background: var(--aqua);
+  color: var(--outline);
+}
+
+.wrd__tab:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--outline);
+}
+
+.wrd__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.wrd__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 10px;
+}
+
+.wrd__grid .cos-card__spark--2 {
+  right: 1px;
+}
+
+/* ═════════════════ РЕВИЛ ДРОПА ═════════════════ */
+
+.cos-drop {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px 14px;
+  overflow: hidden;
+}
+
+/* лучи редкости за предметом */
+.cos-drop__burst {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  width: 210px;
+  height: 210px;
+  margin-left: -105px;
+  background: repeating-conic-gradient(
+    var(--rr) 0deg 7deg,
+    transparent 7deg 21deg
+  );
+  opacity: 0.12;
+  animation: cos-burst-pulse 2.6s var(--ease-inout) infinite;
+  pointer-events: none;
+}
+
+@keyframes cos-burst-pulse {
+  0%,
+  100% {
+    opacity: 0.09;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.16;
+    transform: scale(1.05);
+  }
+}
+
+/* легенда: лучи вращаются + ярче */
+.cos-drop--legend .cos-drop__burst {
+  opacity: 0.2;
+  animation: cos-burst-legend 9s linear infinite;
+}
+
+@keyframes cos-burst-legend {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.16;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.06);
+    opacity: 0.24;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 0.16;
+  }
+}
+
+.cos-drop__item {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+}
+
+.cos-drop__name {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  text-shadow: var(--shadow-1);
+  text-align: center;
+}
+
+.cos-drop__plate {
+  position: relative;
+  z-index: 1;
+  padding: 2px 12px 3px;
+  background: var(--rr);
+  color: var(--outline);
+  border: 2px solid var(--outline);
+  box-shadow: var(--shadow-1);
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* легенда: перелив по плашке редкости */
+.cos-drop--legend .cos-drop__plate {
+  animation: cos-plate-hue 2.4s linear infinite;
+}
+
+@keyframes cos-plate-hue {
+  0%,
+  100% {
+    background: var(--gold);
+  }
+  33% {
+    background: color-mix(in srgb, var(--gold) 55%, var(--aqua));
+  }
+  66% {
+    background: color-mix(in srgb, var(--gold) 55%, var(--pink));
+  }
+}
+
+/* искры вокруг легендарного дропа */
+.cos-drop__spark {
+  position: absolute;
+  z-index: 2;
+  color: var(--gold);
+  opacity: 0;
+  animation: cos-twinkle 1.7s var(--ease-out) infinite;
+  pointer-events: none;
+}
+
+.cos-drop__spark--1 {
+  top: 6px;
+  left: 12%;
+}
+
+.cos-drop__spark--2 {
+  top: 34%;
+  right: 8%;
+  animation-delay: 0.5s;
+}
+
+.cos-drop__spark--3 {
+  bottom: 30%;
+  left: 10%;
+  animation-delay: 0.9s;
+}
+
+.cos-drop__spark--4 {
+  bottom: 8%;
+  right: 16%;
+  animation-delay: 1.2s;
+}
+
+/* плашка компенсации за дубликат */
+.cos-drop__dup {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  border: 2px solid var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, var(--panel));
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.05em;
+}
+
+/* ═════════════════ ЭКРАН ОТКРЫТИЯ СУНДУКА ═════════════════ */
+
+.cso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.cso__chest {
+  padding: 6px 0 2px;
+}
+
+.cso__chest .chest {
+  cursor: pointer;
+}
+
+.cso__actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.cso__actions > * {
+  flex: 1;
+}
+
+/* ═════════════════ СУНДУК ═════════════════ */
+
+.chest {
+  position: relative;
+  flex: none;
+}
+
+.chest__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* закрытый сундук «дышит» */
+.chest--breathe .chest__svg {
+  transform-origin: 50% 100%;
+  animation: chest-breathe 2.1s var(--ease-inout) infinite;
+}
+
+@keyframes chest-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.025) translateY(-1.5%);
+  }
+}
+
+/* тряска в момент открытия (однократно, при появлении класса) */
+.chest__inner--shake {
+  animation: chest-shake 0.5s var(--ease-out) 1;
+}
+
+@keyframes chest-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-1.3px);
+  }
+  40% {
+    transform: translateX(1.3px);
+  }
+  60% {
+    transform: translateX(-0.9px);
+  }
+  80% {
+    transform: translateX(0.9px);
+  }
+}
+
+/* крышка: hinge по нижней кромке; открытие — с задержкой после тряски,
+   закрытие — сразу */
+.chest__lid {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 0.5s var(--ease-spring);
+}
+
+.chest__lid--open {
+  transform: rotate(-106deg);
+  transition-delay: 0.32s;
+}
+
+/* лучи из горловины: пульс + лёгкое «дыхание» вверх */
+.chest__rays {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: chest-rays 1.5s var(--ease-inout) infinite;
+}
+
+@keyframes chest-rays {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scaleY(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.04);
+  }
+}
+
+.chest__inside {
+  animation: chest-inside 1.2s var(--ease-inout) infinite;
+}
+
+@keyframes chest-inside {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* искры золотого сундука */
+.chest-spark rect {
+  fill: currentColor;
+}
+
+.chest-spark {
+  color: var(--gold);
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: cos-twinkle 1.6s var(--ease-out) infinite;
+}
+
+/* ═════════════════ КАРТОЧКА ИТОГА ДНЯ ═════════════════ */
+
+.daily {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.daily__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.daily__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  text-shadow: var(--shadow-1);
+  text-transform: uppercase;
+}
+
+.daily__cells {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.daily__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 4px 8px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  box-shadow: var(--shadow-1);
+}
+
+.daily__tick {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--outline);
+}
+
+.daily__tick--ok {
+  background: var(--up);
+  color: var(--outline);
+}
+
+.daily__tick--err {
+  background: var(--down);
+  color: var(--outline);
+}
+
+.daily__tick svg {
+  width: 14px;
+  height: 14px;
+}
+
+.daily__dir {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.daily__dir--up {
+  color: var(--up);
+}
+
+.daily__dir--down {
+  color: var(--down);
+}
+
+.daily__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.daily__streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.daily__coins {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.05em;
+}

@@ -261,3 +261,112 @@
     transform: translateY(-10%);
   }
 }
+
+/* ═══════════ Кастомизация ═══════════ */
+
+/* ── скин «Голограмма»: перелив 3 кадров палитры мятный→розовый→голубой
+      (тело и жабры нарисованы трижды, кадры переключает opacity —
+      приём тех же 2 кадров жабр, но на 3 слоя). Без анимации — 1-й кадр. ── */
+.axo-holo-f1,
+.axo-holo-f2 {
+  opacity: 0;
+}
+
+.axo--anim .axo-holo-f0 {
+  animation: axo-holo-0 4.2s var(--ease-inout) infinite;
+}
+
+.axo--anim .axo-holo-f1 {
+  animation: axo-holo-1 4.2s var(--ease-inout) infinite;
+}
+
+.axo--anim .axo-holo-f2 {
+  animation: axo-holo-2 4.2s var(--ease-inout) infinite;
+}
+
+@keyframes axo-holo-0 {
+  0%,
+  29% {
+    opacity: 1;
+  }
+  36%,
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes axo-holo-1 {
+  0%,
+  29% {
+    opacity: 0;
+  }
+  36%,
+  62% {
+    opacity: 1;
+  }
+  69%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes axo-holo-2 {
+  0%,
+  62% {
+    opacity: 0;
+  }
+  69%,
+  95% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ── аксессуар «Лазерные очки»: неоновое свечение + 2 кадра мерцания.
+      Свечение — единственный blur в системе (легендарный неон). ── */
+.axo-acc--laser {
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--aqua) 75%, transparent));
+}
+
+.acc-laser-b {
+  opacity: 0;
+}
+
+.axo--anim .acc-laser-a {
+  animation: acc-laser-a 1.6s linear infinite;
+}
+
+.axo--anim .acc-laser-b {
+  animation: acc-laser-b 1.6s linear infinite;
+}
+
+@keyframes acc-laser-a {
+  0%,
+  74%,
+  84%,
+  100% {
+    opacity: 1;
+  }
+  78%,
+  80% {
+    opacity: 0;
+  }
+}
+
+@keyframes acc-laser-b {
+  0%,
+  74%,
+  84%,
+  100% {
+    opacity: 0;
+  }
+  78%,
+  80% {
+    opacity: 1;
+  }
+}
