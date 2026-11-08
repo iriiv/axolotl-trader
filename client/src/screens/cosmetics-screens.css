@@ -83,7 +83,7 @@
 
 .ward-hint {
   margin: 10px 0 0;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   text-align: center;
   color: var(--ink-dim);
@@ -109,7 +109,7 @@
 }
 
 .daily-note {
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.5;
   text-align: center;
   color: var(--ink-dim);
@@ -136,7 +136,7 @@
   color: var(--gold);
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   box-shadow: var(--shadow-1);

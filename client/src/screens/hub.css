@@ -1,12 +1,15 @@
 /* ═══════════════════════════════════════════════════════════════
-    ХАБ v1.2 — маскот-центричная главная + нижняя навигация.
+    ХАБ v1.3 — маскот-центричная главная + нижняя навигация.
     Каркас: .scr-hub (колонка) → .hub-body (секции, слайд 200мс) →
     .hub-tabbar (пять пунктов, центр ▶ приподнят). Документ не
     скроллится никогда — секции скроллятся изнутри.
-    Только var()/color-mix, никаких border-radius/blur.
+    Таб-бар по DESIGN_SYSTEM §8: высота 60px, иконки 30px,
+    активная плашка 40×36 рамка 2px aqua, ▶ — 72px октагон в
+    «кнопочной» конструкции. Только var()/color-mix, без blur.
     ═══════════════════════════════════════════════════════════════ */
 
 .scr-hub {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -36,7 +39,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 4px 2px 30px;
+  padding: 4px 2px 34px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -63,7 +66,7 @@
 }
 
 .hub-note {
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.5;
   text-align: center;
   color: var(--ink-dim);
@@ -114,7 +117,7 @@
   box-shadow: var(--shadow-1);
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0.05em;
 }
 
@@ -129,6 +132,11 @@
 
 .hub-chip--day {
   color: var(--ink-dim);
+}
+
+.hub-chip svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* daily не сыгран — плашка дня пульсирует золотом (без blur) */
@@ -215,7 +223,7 @@
 
 .hub-reg .nick-input {
   min-height: 54px;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 /* ═════════════════ ХРОНИКА ДНЯ ═════════════════ */
@@ -231,7 +239,7 @@
 .hub-daily-date {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--pink);
@@ -274,6 +282,9 @@
 
 .hub-mode__desc svg {
   flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ink-dim);
 }
 
 .hub-mode__row {
@@ -284,7 +295,7 @@
 }
 
 .hub-mode__name {
-  font-size: 18px;
+  font-size: 20px;
   color: var(--ink);
 }
 
@@ -339,7 +350,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .hub-toggle-label svg {
@@ -402,7 +413,7 @@
 }
 
 .hub-shop-card__desc {
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--ink-dim);
 }
@@ -451,7 +462,11 @@
   gap: 12px;
 }
 
-/* ═════════════════ ТАБ-БАР ═════════════════ */
+/* ═════════════════ ТАБ-БАР (§8) ═════════════════
+   Высота 60px · иконки 30px по одной линии · активная вкладка —
+   плашка 40×36 с рамкой 2px aqua · счётчик гардероба — бейдж
+   в правом верхнем углу плашки · центральная ▶ — 72px октагон
+   в той же «кнопочной» конструкции, что и PixelButton. */
 
 .hub-tabbar {
   flex: none;
@@ -459,9 +474,9 @@
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
   align-items: stretch;
-  height: 52px;
-  margin-top: 6px;
-  padding: 2px 4px;
+  height: 60px;
+  margin-top: 8px;
+  padding: 4px;
   border-top: 2px solid var(--line);
   background: color-mix(in srgb, var(--panel) 68%, var(--bg-deep));
 }
@@ -479,81 +494,112 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 1px;
   width: 100%;
   height: 100%;
-  padding: 2px;
+  padding: 0;
   color: var(--ink-dim);
   cursor: pointer;
 }
 
+/* плашка под иконкой: 40×36, всегда занимает место (без прыжков),
+   в покое рамка прозрачна — активная загорается аквой */
 .hub-tab__ico {
+  position: relative;
+  flex: none;
   display: grid;
   place-items: center;
-  min-width: 34px;
-  height: 26px;
-  padding: 0 2px;
+  width: 40px;
+  height: 36px;
+  border: 2px solid transparent;
+}
+
+.hub-tab__ico svg {
+  width: 30px;
+  height: 30px;
 }
 
 .hub-tab__label {
+  flex: none;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 1.1;
   letter-spacing: 0.03em;
   white-space: nowrap;
-}
-
-.hub-tab__meta {
-  position: absolute;
-  right: 8px;
-  bottom: 1px;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  opacity: 0.85;
-  pointer-events: none;
 }
 
 .hub-tab button:active {
   transform: translateY(1px);
 }
 
-/* активная вкладка: аква-плашка под иконкой */
+/* активная вкладка: аква-плашка с рамкой 2px и ступенью */
 .hub-tab.is-on button {
   color: var(--aqua-hi);
 }
 
 .hub-tab.is-on .hub-tab__ico {
-  background: color-mix(in srgb, var(--aqua) 20%, var(--panel));
-  border: 2px solid var(--aqua);
-  box-shadow: var(--shadow-1);
+  border-color: var(--aqua);
+  background: color-mix(in srgb, var(--aqua) 16%, var(--panel));
+  box-shadow: 2px 2px 0 var(--outline);
 }
 
-/* центральная ▶: абсолютная посадка — вылетает вверх над линией,
-   НО не растягивает строку: соседние иконки идут ровно по центру */
+/* счётчик гардероба N/23 — бейдж в правом верхнем углу плашки */
+.hub-tab__badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 1;
+  padding: 1px 4px;
+  border: 2px solid var(--outline);
+  background: var(--gold);
+  color: var(--outline);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  box-shadow: 1px 1px 0 var(--outline);
+  pointer-events: none;
+}
+
+/* центральная ▶: абсолютная посадка — вылетает вверх над линией
+   (не растягивает строку), конструкция как у PixelButton:
+   рамка-октагон 3px + ступень-тень 6px + двухступенчатая грань
+   + световая линия. Три слоя: __shadow (ступень) → __rim (рамка)
+   → __face (грань со световой линией и иконкой). */
 .hub-tab--play {
   position: relative;
 }
 
+/* центральная ▶ — 72px на любой высоте (герой-кнопка, §8);
+   абсолютная посадка не растягивает строку таб-бара */
 .hub-tab--play .hub-play {
   position: absolute;
   left: 50%;
   bottom: 2px;
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   min-height: 0;
   padding: 0;
-  transform: translate(-50%, -16px);
+  background: none;
+  transform: translate(-50%, -18px);
   cursor: pointer;
+  /* возврат из нажатия — пружиной (как у кнопок) */
+  transition: transform var(--dur-mid) var(--ease-spring);
 }
 
 .hub-tab--play .hub-play__shadow,
+.hub-tab--play .hub-play__rim,
 .hub-tab--play .hub-play__face {
   position: absolute;
-  inset: 0;
   display: grid;
   place-items: center;
+}
+
+.hub-tab--play .hub-play__shadow,
+.hub-tab--play .hub-play__rim {
+  inset: 0;
   clip-path: polygon(
     30% 0,
     70% 0,
@@ -566,31 +612,100 @@
   );
 }
 
+/* ступень-тень 6px (как у xl-кнопки) */
 .hub-tab--play .hub-play__shadow {
   background: var(--outline);
-  transform: translate(4px, 4px);
+  transform: translate(6px, 6px);
+  transition: transform var(--dur-mid) var(--ease-spring);
 }
 
+/* рамка-октагон 3px цвета outline */
+.hub-tab--play .hub-play__rim {
+  background: var(--outline);
+}
+
+/* грань: врезана на 3px внутрь рамки, та же двухступенчатая
+   заливка + световая линия сверху/снизу */
 .hub-tab--play .hub-play__face {
-  background: var(--aqua);
+  inset: 3px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--aqua) 82%, white) 0 50%,
+    var(--aqua) 50% 100%
+  );
   color: var(--outline);
-  transition: transform var(--dur-mid) var(--ease-spring), background var(--dur-fast) var(--ease-out);
+  clip-path: polygon(
+    30% 0,
+    70% 0,
+    100% 30%,
+    100% 70%,
+    70% 100%,
+    30% 100%,
+    0 70%,
+    0 30%
+  );
+  box-shadow:
+    inset 0 3px 0 var(--btn-light),
+    inset 0 -3px 0 var(--btn-shade);
 }
 
-.hub-tab--play .hub-play:active .hub-play__face {
-  transform: translate(3px, 3px);
+.hub-tab--play .hub-play__face svg {
+  width: 34px;
+  height: 34px;
+  margin-left: 3px; /* оптическое центрирование: масса ▶ слева,
+     треугольник чуть смещается вправо от геометрического центра */
+}
+
+/* нажатие: перенос в тень — кнопка уходит на 5px вниз, ступень
+   подтягивается до 1px; возврат пружиной */
+.hub-tab--play .hub-play:active {
+  transform: translate(-50%, -13px);
   transition: transform var(--dur-fast) var(--ease-out);
 }
 
+.hub-tab--play .hub-play:active .hub-play__shadow {
+  transform: translate(1px, 1px);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+/* активная секция «Играть» — ▶ золотая (грань в цветах gold) */
 .hub-tab--play.is-on .hub-play__face {
-  background: var(--gold);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--gold) 82%, white) 0 50%,
+    var(--gold) 50% 100%
+  );
+}
+
+/* ═════════════════ ОНБОРДИНГ: позиции coach-подсказок ═════════════════
+   Плашки маленькие и НЕ перекрывают клики (pointer-events:none у
+   .coach) — позиция подобрана так, чтобы не садиться на центры
+   кнопок btn-play / btn-daily / btn-leaderboard и поле ника. */
+
+.hub-coach {
+  z-index: 30;
+}
+
+.hub-coach--mascot {
+  top: 92px;
+  right: 6px;
+}
+
+.hub-coach--play {
+  bottom: 84px;
+  left: 10px;
+}
+
+.hub-coach--wardrobe {
+  bottom: 84px;
+  right: 10px;
 }
 
 /* ═════════════════ АДАПТИВ ═════════════════ */
 
 @media (max-height: 700px) {
   .hub-chip {
-    font-size: 12px;
+    font-size: 13px;
     padding: 4px 8px;
   }
 
@@ -598,20 +713,18 @@
     width: min(300px, 94%);
   }
 
-  .hub-tab--play .hub-play {
-    width: 56px;
-    height: 56px;
-    transform: translate(-50%, -12px);
+  .hub-coach--mascot {
+    top: 78px;
   }
 }
 
 @media (max-width: 340px) {
   .hub-tab__label {
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .hub-tab__ico {
-    min-width: 28px;
+    width: 36px;
   }
 
   .hub-shop-card {

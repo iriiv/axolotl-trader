@@ -2,7 +2,8 @@
    Единое хранилище localStorage. Всё в try/catch: приватный режим
    и WebView без storage не должны ломать игру.
    Ключи: ax_nick, ax_best, ax_games, ax_last, ax_scores_v1,
-   ax_coins, ax_inv, ax_equip, ax_pity, ax_daily (косметика/daily)
+   ax_coins, ax_inv, ax_equip, ax_pity, ax_daily (косметика/daily),
+   ax_onboarded (онбординг-подсказки хаба показаны)
    ═══════════════════════════════════════════════════════════════ */
 
 import type { CosmeticKind } from '../design/cosmetics/catalog'
@@ -19,6 +20,7 @@ const KEYS = {
   equip: 'ax_equip',
   pity: 'ax_pity',
   daily: 'ax_daily',
+  onboarded: 'ax_onboarded',
 } as const
 
 function read<T>(key: string, fallback: T): T {
@@ -278,6 +280,17 @@ export const storage = {
 
   setDaily(d: DailyState): void {
     write(KEYS.daily, d)
+  },
+
+  /* ── онбординг хаба (coach-подсказки первого запуска) ── */
+
+  /** true — подсказки первого запуска уже показаны/отключены */
+  getOnboarded(): boolean {
+    return read<boolean>(KEYS.onboarded, false) === true
+  },
+
+  setOnboarded(done: boolean): void {
+    write(KEYS.onboarded, done)
   },
 
   /* ── дебаг (хаб v1.2) ── */

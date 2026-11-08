@@ -5,7 +5,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { useEffect, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { animate } from 'framer-motion'
 import { sfx } from './sfx'
 import { haptic } from './haptics'
@@ -421,6 +421,69 @@ export function ProgressBar({
       {Array.from({ length: segments }, (_, i) => (
         <span key={i} className={cx('pxprog__seg', i < active && 'is-on')} />
       ))}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════ CoachTip ═══════════════════════
+   Подсказка онбординга (§12 DESIGN_SYSTEM): тёмная плашка с рамкой
+   2px, хвостиком-стрелкой и кнопками «Дальше» / «×». Сама плашка
+   pointer-events:none — НЕ перекрывает клики по интерфейсу под ней;
+   кликабельны только кнопки. Шаг 0 дополнительно закрывается тапом
+   в любом месте экрана (это делает владелец, слушая pointerdown). */
+
+export interface CoachTipProps {
+  children: ReactNode
+  /** куда указывает хвостик-стрелка */
+  tail?: 'down' | 'up' | 'left' | 'right'
+  /** горизонталь/вертикаль хвостика, px от края плашки */
+  tailOffset?: number
+  /** номер шага (с 0) и их количество — плашка «1/3» */
+  step?: number
+  steps?: number
+  nextLabel?: string
+  onNext?: () => void
+  onSkip?: () => void
+  className?: string
+  style?: CSSProperties
+}
+
+export function CoachTip({
+  children,
+  tail = 'down',
+  tailOffset,
+  step,
+  steps,
+  nextLabel = 'Дальше',
+  onNext,
+  onSkip,
+  className,
+  style,
+}: CoachTipProps) {
+  return (
+    <div
+      className={cx('coach', `coach--${tail}`, className)}
+      style={{
+        ...(tailOffset !== undefined ? ({ '--coach-tail': `${tailOffset}px` } as CSSProperties) : null),
+        ...style,
+      }}
+      data-testid="coach-tip"
+      role="status"
+    >
+      <div className="coach__text">{children}</div>
+      <div className="coach__actions">
+        {step !== undefined && steps !== undefined && (
+          <span className="coach__step" aria-hidden="true">
+            {step + 1}/{steps}
+          </span>
+        )}
+        <button type="button" className="coach__next" onClick={onNext}>
+          {step !== undefined && steps !== undefined && step + 1 >= steps ? 'Понятно' : nextLabel}
+        </button>
+        <button type="button" className="coach__x" aria-label="Скрыть подсказки" onClick={onSkip}>
+          <IconClose />
+        </button>
+      </div>
     </div>
   )
 }

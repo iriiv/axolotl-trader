@@ -22,7 +22,7 @@ import type { FormEvent, ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Axolotl } from '../design/axolotl'
 import { AxolotlCoin } from '../design/axolotl'
-import { Chip, Modal, PixelButton, PixelCard, SpeechBubble } from '../design/ui'
+import { Chip, CoachTip, Modal, PixelButton, PixelCard, SpeechBubble } from '../design/ui'
 import {
   IconBook,
   IconCalendar,
@@ -36,6 +36,7 @@ import {
   IconShirt,
   IconSoundOff,
   IconSoundOn,
+  IconSpark,
   IconStar,
   IconTrophy,
   IconTv,
@@ -51,6 +52,7 @@ import { pickAxoPhrase, pickHubPhrase } from '../game/phrases'
 import { sfx } from '../design/sfx'
 import { haptic } from '../design/haptics'
 import type { EquipState, StoredResult } from '../game/storage'
+import { storage } from '../game/storage'
 import { WardrobeScreen } from './WardrobeScreen'
 import './hub.css'
 
@@ -127,7 +129,7 @@ const HOWTO_STEPS = [
   },
 ]
 
-/** пиксель-«круг» (октагон) для центральной кнопки ▶ */
+/** октагон для центральной кнопки ▶ (§8: 72px, рамка 3px) */
 const PIXEL_CIRCLE =
   'polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%)'
 
@@ -142,12 +144,13 @@ interface TabDef {
   icon: ReactNode
 }
 
+/* иконки таб-бара — 30px (DESIGN_SYSTEM §7-8) */
 const TABS: TabDef[] = [
-  { id: 'account', label: 'Аккаунт', testid: 'tab-account', icon: <IconUser size={20} /> },
-  { id: 'daily', label: 'Хроника', testid: 'tab-daily', icon: <IconCalendar size={20} /> },
+  { id: 'account', label: 'Аккаунт', testid: 'tab-account', icon: <IconUser size={30} /> },
+  { id: 'daily', label: 'Хроника', testid: 'tab-daily', icon: <IconCalendar size={30} /> },
   { id: 'play', label: 'Играть', testid: 'tab-play', icon: null },
-  { id: 'wardrobe', label: 'Гардероб', testid: 'btn-wardrobe', icon: <IconShirt size={20} /> },
-  { id: 'shop', label: 'Магазин', testid: 'tab-shop', icon: <IconChest size={20} /> },
+  { id: 'wardrobe', label: 'Гардероб', testid: 'btn-wardrobe', icon: <IconShirt size={30} /> },
+  { id: 'shop', label: 'Магазин', testid: 'tab-shop', icon: <IconChest size={30} /> },
 ]
 
 /* ═════════════════Главная секция ═════════════════ */
@@ -285,10 +288,11 @@ function HomeSection(props: HubScreenProps) {
         </form>
       )}
 
-      {/* быстрые действия над таб-баром */}
+      {/* быстрые действия над таб-баром: главная CTA — xl primary,
+          вторичные — lg (gold daily / ghost лидерборд) */}
       <footer className="hub-actions">
         <div data-testid="btn-play">
-          <PixelButton variant="primary" size="xl" full icon={<IconPlay size={16} />} onClick={onPlay}>
+          <PixelButton variant="primary" size="xl" full icon={<IconPlay size={24} />} onClick={onPlay}>
             {gamesCount > 0 ? 'Продолжить кампанию' : 'Начать хроники'}
           </PixelButton>
         </div>
@@ -707,8 +711,60 @@ function ShopSection({ coins, onBuyChest }: HubScreenProps) {
 
 /* ═════════════════ХАБ ═════════════════ */
 
+/* шаги онбординга первого запуска (§12): плашки CoachTip поверх
+   главной; не перекрывают клики (pointer-events:none у .coach),
+   первый шаг дополнительно закрывается тапом в любом месте */
+const COACH_STEPS: Array<{
+  text: string
+  icon: ReactNode
+  cls: string
+  tailOffset: number
+}> = [
+  { text: 'Это твой аксолотль — тапни его!', icon: <IconSpark size={20} />, cls: 'hub-coach--mascot', tailOffset: 40 },
+  { text: 'Здесь кампания и хроника дня', icon: <IconPlay size={20} />, cls: 'hub-coach--play', tailOffset: 170 },
+  { text: 'Собирай сундуки и наряжай его в Гардеробе', icon: <IconShirt size={20} />, cls: 'hub-coach--wardrobe', tailOffset: 200 },
+]
+
 export function HubScreen(props: HubScreenProps) {
-  const { tab, onTab, ownedIds, itemsTotal } = props
+  const { tab, onTab, nick, ownedIds, itemsTotal } = props
+
+  /* онбординг: показываем один раз — чистый профиль (нет ax_nick
+     и флага ax_onboarded); любые закрытия пишут флаг навсегда */
+  const [coachStep, setCoachStep] = useState<number | null>(() =>
+    !nick && !storage.getOnboarded() ? 0 : null,
+  )
+
+  const coachFinish = () => {
+    storage.setOnboarded(true)
+    setCoachStep(null)
+  }
+
+  const coachNext = () => {
+    if (coachStep === null) return
+    if (coachStep + 1 < COACH_STEPS.length) {
+      sfx.tap()
+      haptic.tap()
+      setCoachStep(coachStep + 1)
+    } else {
+      coachFinish()
+    }
+  }
+
+  /* первый шаг закрывается тапом в любом месте экрана — листенер
+     пассивный: тап проходит сквозь подсказку к элементу под ней */
+  useEffect(() => {
+    if (coachStep !== 0) return
+    const onDown = (e: PointerEvent) => {
+      if (e.target instanceof Element && e.target.closest('.coach')) return
+      coachFinish()
+    }
+    window.addEventListener('pointerdown', onDown)
+    return () => window.removeEventListener('pointerdown', onDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coachStep])
+
+  const coachVisible = coachStep !== null && tab === 'home' && !nick
+  const coach = coachStep !== null ? COACH_STEPS[coachStep] : null
 
   const handleTab = (id: Exclude<HubTab, 'home'>) => {
     sfx.tap()
@@ -759,6 +815,23 @@ export function HubScreen(props: HubScreenProps) {
         </AnimatePresence>
       </div>
 
+      {/* онбординг первого запуска: coach-подсказка поверх главной */}
+      {coachVisible && coach && (
+        <CoachTip
+          key={coachStep}
+          className={cx('hub-coach', coach.cls)}
+          tail="down"
+          tailOffset={coach.tailOffset}
+          step={coachStep}
+          steps={COACH_STEPS.length}
+          onNext={coachNext}
+          onSkip={coachFinish}
+        >
+          {coach.icon}
+          {coach.text}
+        </CoachTip>
+      )}
+
       {/* нижняя навигация: 5 пунктов, центр — приподнятая ▶ */}
       <nav className="hub-tabbar" data-testid="hub-tabbar" aria-label="Разделы">
         {TABS.map((t) => {
@@ -768,8 +841,9 @@ export function HubScreen(props: HubScreenProps) {
               <div key={t.id} className={cx('hub-tab hub-tab--play', active && 'is-on')} data-testid={t.testid}>
                 <button type="button" className="hub-play" aria-label="Играть" aria-pressed={active} onClick={() => handleTab('play')}>
                   <span className="hub-play__shadow" aria-hidden="true" />
+                  <span className="hub-play__rim" aria-hidden="true" />
                   <span className="hub-play__face" style={{ clipPath: PIXEL_CIRCLE }}>
-                    <IconPlay size={24} />
+                    <IconPlay size={34} />
                   </span>
                 </button>
               </div>
@@ -780,12 +854,13 @@ export function HubScreen(props: HubScreenProps) {
               <button type="button" aria-label={t.label} aria-pressed={active} onClick={() => handleTab(t.id)}>
                 <span className="hub-tab__ico" aria-hidden="true">
                   {t.icon}
+                  {t.id === 'wardrobe' && (
+                    <span className="hub-tab__badge" title="Собрано предметов">
+                      {ownedIds.length}/{itemsTotal}
+                    </span>
+                  )}
                 </span>
-                {t.id === 'wardrobe' && (
-                  <span className="hub-tab__meta" title="Собрано предметов">
-                    {ownedIds.length}/{itemsTotal}
-                  </span>
-                )}
+                <span className="hub-tab__label">{t.label}</span>
               </button>
             </div>
           )

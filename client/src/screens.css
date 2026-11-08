@@ -183,7 +183,7 @@
 .title-sub2 {
   margin-top: 4px;
   max-width: 320px;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--ink-dim);
 }
 
@@ -211,7 +211,7 @@
 }
 
 .title-disclaimer {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-dim);
   opacity: 0.75;
 }
@@ -256,7 +256,7 @@
 
 .howto__text {
   margin-top: 3px;
-  font-size: 13.5px;
+  font-size: 13px;
   line-height: 1.45;
   color: color-mix(in srgb, var(--ink) 88%, var(--panel));
 }
@@ -269,7 +269,7 @@
 .nick-kicker {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--gold);
@@ -295,7 +295,7 @@
 }
 
 .nick-label {
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-dim);
@@ -330,7 +330,7 @@
 
 .field-hint {
   min-height: 18px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.35;
   color: var(--ink-dim);
 }
@@ -358,7 +358,7 @@
 .intro-theme {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--pink);
@@ -370,7 +370,7 @@
 }
 
 .intro-hint {
-  font-size: 14.5px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
@@ -398,7 +398,7 @@
 }
 
 .news-card__text {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
@@ -407,7 +407,7 @@
 }
 
 .news-card.is-old .news-card__text {
-  font-size: 12.5px;
+  font-size: 13px;
   color: color-mix(in srgb, var(--ink) 78%, var(--panel));
 }
 
@@ -429,7 +429,7 @@
 }
 
 .quiz-grid .opt__label {
-  font-size: 16px;
+  font-size: 17px;
 }
 
 /* «Перечитать новости» — кнопка-подсказка на квизах и ставке */
@@ -524,14 +524,10 @@
   gap: 12px;
 }
 
-.pxbtn.is-chosen {
-  box-shadow: var(--shadow-3), inset 0 0 0 3px var(--ink);
-}
-
 .bet-timeout {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--down);
   text-align: center;
 }
@@ -561,7 +557,7 @@
 }
 
 .reveal-thought {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ink-dim);
 }
 
@@ -605,7 +601,7 @@
 .reveal-extremes {
   padding: 4px 2px 0;
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0.05em;
   color: var(--ink-dim);
   text-align: center;
@@ -619,7 +615,7 @@
 
 .reveal-why {
   margin-top: 8px;
-  font-size: 13.5px;
+  font-size: 13px;
   line-height: 1.5;
   color: color-mix(in srgb, var(--ink) 86%, var(--panel));
 }
@@ -676,7 +672,7 @@
 }
 
 .lesson__label {
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.1em;
   color: var(--gold);
   text-transform: uppercase;
@@ -684,7 +680,7 @@
 
 .lesson__text {
   margin-top: 4px;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.45;
 }
 
@@ -758,7 +754,7 @@
 /* ── лидерборд ── */
 .lb-offline {
   margin-bottom: 10px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--gold);
 }
 
@@ -807,7 +803,7 @@
   border: none;
   background: none;
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-dim);
@@ -825,7 +821,7 @@
   min-width: 22px;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--ink-dim);
 }
 
@@ -848,7 +844,7 @@
 
 .lb-nick {
   overflow: hidden;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -862,14 +858,14 @@
 .lb-score {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 16px;
+  font-size: 15px;
   text-align: right;
   color: var(--gold);
 }
 
 .lb-dir,
 .lb-streak {
-  font-size: 11px;
+  font-size: 13px;
   text-align: right;
   color: var(--ink-dim);
 }
@@ -932,11 +928,6 @@
     font-size: 44px;
   }
 
-  .pxbtn--xl {
-    min-height: 60px;
-    font-size: 20px;
-  }
-
   .bet-buttons {
     gap: 10px;
   }
@@ -964,6 +955,11 @@
 
   .title-axo .axo {
     transform-origin: 50% 100%;
+  }
+
+  /* две xl-кнопки ставки не влезают — слегка плотнее (60px) */
+  .pxbtn--xl {
+    min-height: 60px;
   }
 }
 

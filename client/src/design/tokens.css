@@ -44,6 +44,17 @@
   --shadow-2: 4px 4px 0 var(--outline);
   --shadow-3: 6px 6px 0 var(--outline);
 
+  /* ── кнопочные ступени (DESIGN_SYSTEM §5): md 4px · lg 5px · xl 6px ── */
+  --shadow-step-md: 4px 4px 0 var(--outline);
+  --shadow-step-lg: 5px 5px 0 var(--outline);
+  --shadow-step-xl: 6px 6px 0 var(--outline);
+
+  /* ── световые грани «объёмной» кнопки NES-типа:
+      верхняя грань светится, нижняя — в тени. Единственные
+      разрешённые технические rgba вне tokens-палитры. ── */
+  --btn-light: rgba(255, 255, 255, 0.14);
+  --btn-shade: rgba(0, 0, 0, 0.22);
+
   /* ── ДВИЖЕНИЕ (плавное): ретро-графика + современные спринги ──
      Графика остаётся пиксельной, а перемещение — мягким:
      overshoot для «пружин», ease-out для нажатий, inout для циклов. */

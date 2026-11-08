@@ -1,29 +1,45 @@
 /* ═══════════════════════════════════════════════════════════════
-   UI-КИТ — стили. Правила системы:
-   • рамки 2-3px var(--outline), тени только ступенями, без blur
-   • border-radius запрещён (0 везде)
-   • тап-таргеты ≥52px, :active со сдвигом, hover не обязателен
-   • оттенки через color-mix от переменных tokens.css
-   ═══════════════════════════════════════════════════════════════ */
+    UI-КИТ — стили. Конституция: design/DESIGN_SYSTEM.md. Правила:
+    • рамки 2-3px var(--outline), тени только ступенями, без blur
+    • border-radius запрещён (0 везде, кроме октагона ▶ в таб-баре)
+    • тап-таргеты ≥52px, :active — перенос в тень, hover не обязателен
+    • оттенки через color-mix от переменных tokens.css
+    ═══════════════════════════════════════════════════════════════ */
 
-/* ═══════════ PixelButton ═══════════ */
+/* ═══════════ PixelButton — «объёмная» NES-кнопка (§5) ═══════════
+   Конструкция послойно:
+   1) рамка 3px var(--outline)
+   2) верхняя грань — ЖЁСТКАЯ двухступенчатая заливка: верх на 18%
+      светлее цвета варианта (резкий стоп 50/50, НЕ плавный градиент)
+   3) внутренняя световая линия: inset 0 2px 0 var(--btn-light) сверху
+      + inset 0 -2px 0 var(--btn-shade) снизу — «объём»
+   4) ступень-тень: 4/5/6px var(--outline) по размеру
+   :active — лицо переносится в тень (3/4/5px), возврат пружиной */
 
 .pxbtn {
   --btn-bg: var(--aqua);
+  --btn-bg-hi: color-mix(in srgb, var(--btn-bg) 82%, white);
   --btn-ink: var(--outline);
+  --btn-step: var(--shadow-step-md);
+  --btn-press: 3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  border: 2px solid var(--outline);
+  border: 3px solid var(--outline);
   border-radius: 0;
-  box-shadow: var(--shadow-2);
-  background: var(--btn-bg);
+  box-shadow:
+    var(--btn-step),
+    inset 0 2px 0 var(--btn-light),
+    inset 0 -2px 0 var(--btn-shade);
+  background: linear-gradient(180deg, var(--btn-bg-hi) 0 50%, var(--btn-bg) 50% 100%);
   color: var(--btn-ink);
   font-family: var(--font-display);
   font-weight: 400;
-  letter-spacing: 0.06em;
+  font-size: 16px;
+  letter-spacing: 0.05em;
   line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   /* возврат из нажатия — пружиной; само нажатие — быстро (см. :active) */
   transition:
@@ -34,22 +50,24 @@
 
 .pxbtn--md {
   min-height: 52px;
-  padding: 0 18px;
+  padding: 0 16px;
   font-size: 16px;
 }
 
 .pxbtn--lg {
   min-height: 60px;
-  padding: 0 22px;
+  padding: 0 20px;
   font-size: 18px;
+  --btn-step: var(--shadow-step-lg);
+  --btn-press: 4px;
 }
 
 .pxbtn--xl {
   min-height: 68px;
-  padding: 0 26px;
+  padding: 0 24px;
   font-size: 20px;
-  box-shadow: var(--shadow-3);
-  border-width: 3px;
+  --btn-step: var(--shadow-step-xl);
+  --btn-press: 5px;
 }
 
 .pxbtn--full {
@@ -60,17 +78,18 @@
   display: inline-flex;
 }
 
+/* иконка в кнопке — 22px (xl → 24px), см. §7 */
 .pxbtn__icon svg {
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
 }
 
 .pxbtn--xl .pxbtn__icon svg {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
 
-/* варианты */
+/* варианты (цвет — только здесь) */
 .pxbtn--primary {
   --btn-bg: var(--aqua);
   --btn-ink: var(--outline);
@@ -86,11 +105,6 @@
   --btn-ink: var(--outline);
 }
 
-.pxbtn--ghost {
-  --btn-bg: var(--panel);
-  --btn-ink: var(--ink);
-}
-
 .pxbtn--up {
   --btn-bg: var(--up);
   --btn-ink: var(--outline);
@@ -101,18 +115,43 @@
   --btn-ink: var(--outline);
 }
 
-/* нажатие: быстрое вдавливание (ease-out), возврат — пружиной выше */
+/* ghost: без заливки и световых граней — рамка 2px var(--line),
+   текст ink; hover/active — рамка загорается аквой */
+.pxbtn--ghost {
+  --btn-bg: transparent;
+  --btn-ink: var(--ink);
+  --btn-step: 2px 2px 0 var(--outline);
+  border-width: 2px;
+  border-color: var(--line);
+  background: none;
+  box-shadow: var(--btn-step);
+}
+
+@media (hover: hover) {
+  .pxbtn--ghost:hover {
+    border-color: var(--aqua);
+    color: var(--aqua-hi);
+  }
+}
+
+.pxbtn--ghost:active:not(.pxbtn--disabled) {
+  border-color: var(--aqua);
+}
+
+/* нажатие: быстрый перенос лица в тень (ease-out), возврат — пружиной */
 .pxbtn:active:not(.pxbtn--disabled) {
-  transform: translate(2px, 3px) scale(0.97);
-  box-shadow: 1px 1px 0 var(--outline);
+  transform: translate(var(--btn-press), var(--btn-press));
+  box-shadow:
+    1px 1px 0 var(--outline),
+    inset 0 2px 0 var(--btn-light),
+    inset 0 -2px 0 var(--btn-shade);
   transition:
     transform var(--dur-fast) var(--ease-out),
     box-shadow var(--dur-fast) var(--ease-out);
 }
 
-.pxbtn--xl:active:not(.pxbtn--disabled) {
-  transform: translate(3px, 4px) scale(0.97);
-  box-shadow: 2px 2px 0 var(--outline);
+.pxbtn--ghost:active:not(.pxbtn--disabled) {
+  box-shadow: 1px 1px 0 var(--outline);
 }
 
 .pxbtn--disabled {
@@ -122,16 +161,30 @@
   box-shadow: 2px 2px 0 var(--outline);
 }
 
-/* ═══════════ PixelCard ═══════════ */
+/* выбранная ставка (BetScreen): остаётся цветной и «утопленной»,
+   когда соседняя уже погасла (disabled) */
+.pxbtn.is-chosen,
+.pxbtn.is-chosen:active {
+  filter: none;
+  opacity: 1;
+  transform: translate(var(--btn-press), var(--btn-press));
+  box-shadow:
+    1px 1px 0 var(--outline),
+    inset 0 0 0 3px var(--ink),
+    inset 0 3px 0 var(--btn-light),
+    inset 0 -3px 0 var(--btn-shade);
+}
+
+/* ═══════════ PixelCard (§9) ═══════════ */
 
 .pxcard {
   --card-accent: var(--aqua);
   position: relative;
   margin-top: 10px;
   padding: 16px 14px 14px;
-  border: 2px solid var(--outline);
+  border: 3px solid var(--outline);
   border-radius: 0;
-  box-shadow: var(--shadow-3);
+  box-shadow: var(--shadow-step-lg);
   background:
     linear-gradient(var(--card-accent), var(--card-accent)) left 4px top 4px / 4px 4px no-repeat,
     linear-gradient(var(--card-accent), var(--card-accent)) right 4px top 4px / 4px 4px no-repeat,
@@ -180,10 +233,10 @@
 @keyframes card-glow {
   0%,
   100% {
-    box-shadow: var(--shadow-3), inset 0 0 0 0 var(--card-accent);
+    box-shadow: var(--shadow-step-lg), inset 0 0 0 0 var(--card-accent);
   }
   50% {
-    box-shadow: var(--shadow-3), inset 0 0 0 3px var(--card-accent);
+    box-shadow: var(--shadow-step-lg), inset 0 0 0 3px var(--card-accent);
   }
 }
 
@@ -236,7 +289,7 @@
   margin-top: 4px;
 }
 
-/* ═══════════ OptionButton ═══════════ */
+/* ═══════════ OptionButton — та же объёмная схема (§6) ═══════════ */
 
 .opt {
   display: flex;
@@ -245,29 +298,41 @@
   width: 100%;
   min-height: 68px;
   padding: 10px 12px;
-  border: 2px solid var(--outline);
+  border: 3px solid var(--outline);
   border-radius: 0;
-  background: var(--panel);
+  /* панельная двухступенчатая грань + световая линия + ступень 4px */
+  background: linear-gradient(
+    180deg,
+    var(--panel-2) 0 50%,
+    var(--panel) 50% 100%
+  );
   color: var(--ink);
   text-align: left;
   cursor: pointer;
-  box-shadow: var(--shadow-2);
+  box-shadow:
+    var(--shadow-step-md),
+    inset 0 2px 0 var(--btn-light),
+    inset 0 -2px 0 var(--btn-shade);
   transition:
     transform var(--dur-mid) var(--ease-spring),
     box-shadow var(--dur-mid) var(--ease-spring),
-    background-color var(--dur-mid) var(--ease-out),
+    background var(--dur-mid) var(--ease-out),
     opacity var(--dur-mid) var(--ease-out),
     filter var(--dur-mid) var(--ease-out);
 }
 
 .opt:active:not(.opt--muted) {
-  transform: translate(2px, 3px) scale(0.97);
-  box-shadow: 1px 1px 0 var(--outline);
+  transform: translate(3px, 3px);
+  box-shadow:
+    1px 1px 0 var(--outline),
+    inset 0 2px 0 var(--btn-light),
+    inset 0 -2px 0 var(--btn-shade);
   transition:
     transform var(--dur-fast) var(--ease-out),
     box-shadow var(--dur-fast) var(--ease-out);
 }
 
+/* чип-буква — миниатюрная «кнопка» того же семейства */
 .opt__chip {
   flex: none;
   display: inline-flex;
@@ -276,11 +341,19 @@
   width: 44px;
   height: 44px;
   border: 2px solid var(--outline);
-  background: color-mix(in srgb, var(--aqua) 16%, var(--panel));
-  color: var(--aqua-hi);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--aqua) 82%, white) 0 50%,
+    var(--aqua) 50% 100%
+  );
+  color: var(--outline);
+  box-shadow:
+    2px 2px 0 var(--outline),
+    inset 0 2px 0 var(--btn-light),
+    inset 0 -2px 0 var(--btn-shade);
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 21px;
+  font-size: 20px;
 }
 
 .opt__text {
@@ -297,30 +370,53 @@
 }
 
 .opt__hint {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.3;
   color: var(--ink-dim);
 }
 
 /* состояния */
 .opt--selected {
-  background: var(--panel-2);
-  box-shadow: var(--shadow-2), inset 0 0 0 2px var(--aqua);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--panel-2) 70%, var(--aqua)) 0 50%,
+    var(--panel-2) 50% 100%
+  );
+  box-shadow:
+    var(--shadow-step-md),
+    inset 0 0 0 2px var(--aqua),
+    inset 0 2px 0 var(--btn-light),
+    inset 0 -2px 0 var(--btn-shade);
 }
 
 .opt--selected .opt__chip {
-  background: var(--aqua);
-  color: var(--outline);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--aqua-hi) 82%, white) 0 50%,
+    var(--aqua-hi) 50% 100%
+  );
 }
 
 .opt--correct {
   animation: opt-correct 0.35s var(--ease-spring) 1;
-  background: color-mix(in srgb, var(--up) 34%, var(--panel));
-  box-shadow: var(--shadow-2), inset 0 0 0 3px var(--up);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--up) 40%, var(--panel-2)) 0 50%,
+    color-mix(in srgb, var(--up) 34%, var(--panel)) 50% 100%
+  );
+  box-shadow:
+    var(--shadow-step-md),
+    inset 0 0 0 3px var(--up),
+    inset 0 2px 0 var(--btn-light),
+    inset 0 -2px 0 var(--btn-shade);
 }
 
 .opt--correct .opt__chip {
-  background: var(--up);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--up) 82%, white) 0 50%,
+    var(--up) 50% 100%
+  );
   color: var(--outline);
 }
 
@@ -343,12 +439,24 @@
 .opt--wrong {
   animation: opt-wrong 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) 1,
     opt-wrong-fade 0.6s var(--ease-out) 1;
-  background: color-mix(in srgb, var(--down) 34%, var(--panel));
-  box-shadow: var(--shadow-2), inset 0 0 0 3px var(--down);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--down) 40%, var(--panel-2)) 0 50%,
+    color-mix(in srgb, var(--down) 34%, var(--panel)) 50% 100%
+  );
+  box-shadow:
+    var(--shadow-step-md),
+    inset 0 0 0 3px var(--down),
+    inset 0 2px 0 var(--btn-light),
+    inset 0 -2px 0 var(--btn-shade);
 }
 
 .opt--wrong .opt__chip {
-  background: var(--down);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--down) 82%, white) 0 50%,
+    var(--down) 50% 100%
+  );
   color: var(--outline);
 }
 
@@ -500,7 +608,7 @@
 }
 
 .pxbubble__text {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.4;
   color: var(--ink);
 }
@@ -549,7 +657,7 @@
 }
 
 .combo__streak {
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   color: var(--ink-dim);
   font-weight: 600;
@@ -647,7 +755,7 @@
   }
 }
 
-/* ═══════════ Modal ═══════════ */
+/* ═══════════ Modal (bottom-sheet) ═══════════ */
 
 .pxmodal-backdrop {
   position: fixed;
@@ -729,8 +837,8 @@
 }
 
 .pxmodal__close svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 .pxmodal__body {
@@ -835,7 +943,7 @@
 }
 
 .statrow__label {
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--ink-dim);
 }
 
@@ -870,4 +978,180 @@
 
 .statrow__value--ink {
   color: var(--ink);
+}
+
+/* ═══════════ CoachTip — подсказка онбординга (§12) ═══════════
+   Тёмная плашка с рамкой 2px и хвостиком-стрелкой. ВАЖНО:
+   pointer-events: none — подсказка НЕ перекрывает клики по экрану;
+   кликабельны только её кнопки «Дальше» и «×». */
+
+.coach {
+  position: absolute;
+  z-index: 30;
+  max-width: 252px;
+  padding: 10px 10px 8px 12px;
+  border: 2px solid var(--aqua);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--outline) 78%, var(--panel));
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--outline);
+  pointer-events: none;
+  animation: coach-in 0.32s var(--ease-spring) 1;
+}
+
+@keyframes coach-in {
+  from {
+    transform: scale(0.9) translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.coach__text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  line-height: 1.35;
+  text-shadow: var(--shadow-1);
+}
+
+.coach__text svg {
+  flex: none;
+  color: var(--aqua-hi);
+}
+
+.coach__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.coach__step {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
+}
+
+/* «Дальше» — миниатюрная кнопка того же кнопочного семейства */
+.coach__next {
+  min-width: 88px;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--outline);
+  border-radius: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--aqua) 82%, white) 0 50%,
+    var(--aqua) 50% 100%
+  );
+  color: var(--outline);
+  box-shadow:
+    2px 2px 0 var(--outline),
+    inset 0 2px 0 var(--btn-light),
+    inset 0 -2px 0 var(--btn-shade);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    transform var(--dur-mid) var(--ease-spring),
+    box-shadow var(--dur-mid) var(--ease-spring);
+}
+
+.coach__next:active {
+  transform: translate(2px, 2px);
+  box-shadow:
+    0 0 0 var(--outline),
+    inset 0 2px 0 var(--btn-light),
+    inset 0 -2px 0 var(--btn-shade);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.coach__x {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -6px -6px 0 0;
+  border: 2px solid var(--line);
+  border-radius: 0;
+  background: none;
+  color: var(--ink-dim);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.coach__x svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (hover: hover) {
+  .coach__x:hover {
+    color: var(--aqua-hi);
+    border-color: var(--aqua);
+  }
+}
+
+/* хвостик-стрелка: пиксельная лесенка, цвет плашки + контур */
+.coach::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: color-mix(in srgb, var(--outline) 78%, var(--panel));
+  clip-path: polygon(0 0, 100% 0, 100% 30%, 30% 30%, 30% 66%, 66% 66%, 66% 100%, 0 100%);
+  filter: drop-shadow(2px 2px 0 var(--aqua));
+}
+
+.coach--down::after {
+  bottom: -14px;
+  left: var(--coach-tail, 24px);
+}
+
+.coach--up::after {
+  top: -14px;
+  left: var(--coach-tail, 24px);
+  transform: rotate(180deg);
+}
+
+.coach--left::after {
+  left: -14px;
+  top: var(--coach-tail, 24px);
+  transform: rotate(90deg);
+}
+
+.coach--right::after {
+  right: -14px;
+  top: var(--coach-tail, 24px);
+  transform: rotate(-90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coach {
+    animation: none;
+  }
 }

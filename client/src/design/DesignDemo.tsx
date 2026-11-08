@@ -14,6 +14,7 @@ import './demo.css'
 import {
   Badge,
   Chip,
+  CoachTip,
   ComboMeter,
   Divider,
   HeartsBar,
@@ -41,6 +42,7 @@ import {
   IconFlask,
   IconHeart,
   IconLock,
+  IconPlay,
   IconQuestion,
   IconShirt,
   IconSoundOff,
@@ -48,6 +50,7 @@ import {
   IconSpark,
   IconStar,
   IconTrophy,
+  IconUser,
 } from './icons'
 import {
   ACCS,
@@ -172,6 +175,56 @@ export function DesignDemo() {
         </SpeechBubble>
       </header>
 
+      {/* ═══ КНОПКИ (§5 DESIGN_SYSTEM — «объёмные» NES-кнопки) ═══ */}
+      <h2 className="demo-h2">Кнопки</h2>
+      <p className="demo-note">
+        Объёмная пиксель-кнопка: рамка 3px, двухступенчатая верхняя грань, световая линия
+        (свет сверху / тень снизу) и ступень-тень 4/5/6px. :active — перенос в тень,
+        возврат пружиной. Тап-таргеты 52–68px.
+      </p>
+      <div className="demo-col">
+        <div className="demo-row">
+          <PixelButton variant="primary" size="md">
+            Играть
+          </PixelButton>
+          <PixelButton variant="gold" size="md">
+            Награда
+          </PixelButton>
+          <PixelButton variant="danger" size="md">
+            Сброс
+          </PixelButton>
+        </div>
+        <div className="demo-row">
+          <PixelButton variant="primary" size="lg" icon={<IconPlay size={22} />}>
+            Играть
+          </PixelButton>
+          <PixelButton variant="gold" size="lg" icon={<IconTrophy size={22} />}>
+            Награда
+          </PixelButton>
+          <PixelButton variant="danger" size="lg">
+            Сброс
+          </PixelButton>
+        </div>
+        <div className="demo-row">
+          <PixelButton variant="up" size="xl" full>
+            Рост
+          </PixelButton>
+        </div>
+        <div className="demo-row">
+          <PixelButton variant="down" size="xl" full>
+            Падение
+          </PixelButton>
+        </div>
+        <div className="demo-row">
+          <PixelButton variant="ghost" size="md" icon={<IconQuestion size={22} />}>
+            Подсказка
+          </PixelButton>
+          <PixelButton variant="primary" size="md" disabled>
+            Недоступно
+          </PixelButton>
+        </div>
+      </div>
+
       {/* ═══ ПАЛИТРА ═══ */}
       <h2 className="demo-h2">Палитра океана</h2>
       <div className="swatches">
@@ -197,43 +250,6 @@ export function DesignDemo() {
           </p>
         </div>
       </PixelCard>
-
-      {/* ═══ КНОПКИ ═══ */}
-      <h2 className="demo-h2">Кнопки</h2>
-      <p className="demo-note">
-        Тап-таргеты 52–68px. Нажатие = вдавливание в пиксельную тень + sfx.tap + хаптика.
-      </p>
-      <div className="demo-col">
-        <div className="demo-row">
-          <PixelButton variant="primary" size="lg">
-            Играть
-          </PixelButton>
-          <PixelButton variant="gold" size="lg">
-            Награда
-          </PixelButton>
-          <PixelButton variant="danger" size="lg">
-            Сброс
-          </PixelButton>
-        </div>
-        <div className="demo-row">
-          <PixelButton variant="up" size="xl" full>
-            Рост
-          </PixelButton>
-        </div>
-        <div className="demo-row">
-          <PixelButton variant="down" size="xl" full>
-            Падение
-          </PixelButton>
-        </div>
-        <div className="demo-row">
-          <PixelButton variant="ghost" size="md" icon={<IconQuestion />}>
-            Подсказка
-          </PixelButton>
-          <PixelButton variant="primary" size="md" disabled>
-            Недоступно
-          </PixelButton>
-        </div>
-      </div>
 
       {/* ═══ МАСКОТ ═══ */}
       <h2 className="demo-h2">Настроения аксолотля</h2>
@@ -603,6 +619,19 @@ export function DesignDemo() {
         </PixelButton>
       </div>
 
+      {/* ═══ ОНБОРДИНГ-ПОДСКАЗКИ ═══ */}
+      <h2 className="demo-h2">Подсказки онбординга</h2>
+      <p className="demo-note">
+        CoachTip — тёмная плашка с рамкой 2px и хвостиком-стрелкой. Сама плашка не
+        перекрывает клики (pointer-events: none), кликабельны только «Дальше» и «×».
+        В хабе показывается 3 шага при первом запуске.
+      </p>
+      <div className="coach-demo">
+        <CoachTip tail="down" tailOffset={36} step={0} steps={3} onNext={() => sfx.tap()} onSkip={() => sfx.pop()}>
+          <IconSpark size={20} /> Это твой аксолотль — тапни его!
+        </CoachTip>
+      </div>
+
       {/* ═══ ИКОНКИ ═══ */}
       <h2 className="demo-h2">Пиксель-иконки</h2>
       <div className="icon-grid">
@@ -625,6 +654,8 @@ export function DesignDemo() {
         <div className="icon-cell icon-cell--gold"><IconFire /><span>fire</span></div>
         <div className="icon-cell icon-cell--gold"><IconSpark /><span>spark</span></div>
         <div className="icon-cell"><IconCalendar /><span>calendar</span></div>
+        <div className="icon-cell"><IconUser /><span>user</span></div>
+        <div className="icon-cell icon-cell--big icon-cell--gold"><IconPlay size={30} /><span>play</span></div>
       </div>
 
       {/* ═══ ФИНАЛ ═══ */}
