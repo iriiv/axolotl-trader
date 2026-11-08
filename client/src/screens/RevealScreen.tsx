@@ -19,6 +19,7 @@ import { sfx } from '../design/sfx'
 import { haptic } from '../design/haptics'
 import { formatIsoDateRu, formatMult, formatPct } from '../game/engine'
 import { pickAxoPhrase } from '../game/phrases'
+import type { EquipState } from '../game/storage'
 import { PriceChart } from '../components/PriceChart'
 import { Confetti } from '../components/Confetti'
 import { CoinBurst } from '../components/CoinBurst'
@@ -34,6 +35,8 @@ export interface RevealScreenProps {
   score: number
   streak: number
   multiplier: number
+  /** аксолотль в экипировке */
+  equip?: EquipState
   onNext: () => void
 }
 
@@ -79,6 +82,7 @@ export function RevealScreen({
   score,
   streak,
   multiplier,
+  equip,
   onNext,
 }: RevealScreenProps) {
   const [progress, setProgress] = useState(0)
@@ -275,7 +279,14 @@ export function RevealScreen({
         </div>
 
         <div className="reveal-axo">
-          <Axolotl mood={axoMood} size={compact ? 74 : 92} animated />
+          <Axolotl
+            mood={axoMood}
+            size={compact ? 74 : 92}
+            animated
+            skin={equip?.skin}
+            hat={equip?.hat ?? undefined}
+            acc={equip?.acc ?? undefined}
+          />
           <SpeechBubble side="left">{axoPhrase}</SpeechBubble>
         </div>
 

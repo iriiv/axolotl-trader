@@ -6,8 +6,12 @@ import { Axolotl } from '../design/axolotl'
 import { Modal, PixelButton, SpeechBubble } from '../design/ui'
 import {
   IconBook,
+  IconCalendar,
   IconClock,
+  IconCoin,
+  IconFire,
   IconQuestion,
+  IconShirt,
   IconStar,
   IconSoundOff,
   IconSoundOn,
@@ -16,6 +20,7 @@ import {
 } from '../design/icons'
 import { pickAxoPhrase } from '../game/phrases'
 import type { GameMeta } from '../game/types'
+import type { EquipState } from '../game/storage'
 
 export interface TitleScreenProps {
   meta: GameMeta
@@ -28,6 +33,21 @@ export interface TitleScreenProps {
   onToggleCrt: () => void
   onPlay: () => void
   onLeaderboard: () => void
+  /** надетая косметика (аксолотль титула носит экипировку) */
+  equip: EquipState
+  /** баланс «пузырьков» */
+  coins: number
+  /** счётчик предметов N/total на кнопке гардероба */
+  ownedCount: number
+  itemsTotal: number
+  /** состояние хроники дня */
+  daily: {
+    dayNo: number
+    playedToday: boolean
+    streak: number
+  }
+  onDaily: () => void
+  onWardrobe: () => void
 }
 
 const HOWTO_STEPS = [
@@ -63,6 +83,13 @@ export function TitleScreen({
   onToggleCrt,
   onPlay,
   onLeaderboard,
+  equip,
+  coins,
+  ownedCount,
+  itemsTotal,
+  daily,
+  onDaily,
+  onWardrobe,
 }: TitleScreenProps) {
   const [howtoOpen, setHowtoOpen] = useState(false)
   const phrase = pickAxoPhrase('idle')
@@ -92,8 +119,17 @@ export function TitleScreen({
 
       <div className="title-inner">
         <div className="title-axo">
-          {/* машет лапкой: мягкое покачивание корпусом (axo--wave) */}
-          <Axolotl mood="idle" size={148} animated className="axo--wave" />
+          {/* машет лапкой: мягкое покачивание корпусом (axo--wave);
+              надетая косметика видна и здесь */}
+          <Axolotl
+            mood="idle"
+            size={148}
+            animated
+            className="axo--wave"
+            skin={equip.skin}
+            hat={equip.hat ?? undefined}
+            acc={equip.acc ?? undefined}
+          />
         </div>
         <h1 className="title-logo display">Аксолотль-трейдер</h1>
         <p className="title-sub">{meta.title}</p>
@@ -105,6 +141,35 @@ export function TitleScreen({
           <div data-testid="btn-play">
             <PixelButton variant="primary" size="xl" full onClick={onPlay}>
               Играть
+            </PixelButton>
+          </div>
+          <div data-testid="btn-daily">
+            {daily.playedToday ? (
+              <PixelButton variant="ghost" size="lg" full icon={<IconCalendar />} disabled>
+                Завтра новая хроника
+              </PixelButton>
+            ) : (
+              <PixelButton variant="gold" size="lg" full icon={<IconCalendar />} onClick={onDaily}>
+                Хроника дня №{daily.dayNo}
+                {daily.streak > 0 && (
+                  <span className="title-streak" data-testid="daily-streak">
+                    <IconFire /> {daily.streak}
+                  </span>
+                )}
+              </PixelButton>
+            )}
+          </div>
+          <div data-testid="btn-wardrobe">
+            <PixelButton variant="ghost" size="lg" full icon={<IconShirt />} onClick={onWardrobe}>
+              Гардероб
+              <span className="title-ward-meta">
+                <span className="title-coins" data-testid="title-coins">
+                  <IconCoin /> {coins.toLocaleString('ru-RU')}
+                </span>
+                <span className="title-items">
+                  {ownedCount}/{itemsTotal}
+                </span>
+              </span>
             </PixelButton>
           </div>
           <div data-testid="btn-leaderboard">

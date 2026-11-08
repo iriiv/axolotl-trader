@@ -13,10 +13,31 @@ import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import type { Transition } from 'framer-motion'
 import { DesignDemo } from './design/DesignDemo'
 import { PixelCard } from './design/ui'
+import { IconCalendar, IconFire } from './design/icons'
 import { sfx } from './design/sfx'
 import { fetchScores, gameData, submitScore } from './api'
 import { comboMultiplier, scoreRound, summarize } from './game/engine'
+import {
+  CHEST_PRICES,
+  dailyCoins,
+  gameCoins,
+  pityAfter,
+  rollDrop,
+} from './game/economy'
+import type { DropResult } from './game/economy'
+import {
+  continuesStreak,
+  dateLabelRu,
+  dayNumber,
+  pickDailyRound,
+  todayKey,
+} from './game/daily'
 import { storage } from './game/storage'
+import type { EquipState } from './game/storage'
+import { COSMETICS } from './design/cosmetics/catalog'
+import type { CosmeticItem, CosmeticKind } from './design/cosmetics/catalog'
+import type { ChestType } from './design/cosmetics/chests'
+import type { DailyCaseCell } from './design/cosmetics'
 import { CrtOverlay, readCrtPref, writeCrtPref } from './components/CrtOverlay'
 import type { Direction, RoundAnswer, RoundScore, Score } from './game/types'
 import { TitleScreen } from './screens/TitleScreen'
@@ -28,7 +49,11 @@ import { BetScreen } from './screens/BetScreen'
 import { RevealScreen } from './screens/RevealScreen'
 import { SummaryScreen } from './screens/SummaryScreen'
 import { LeaderboardScreen } from './screens/LeaderboardScreen'
+import { WardrobeScreen } from './screens/WardrobeScreen'
+import { ChestScreen } from './screens/ChestScreen'
+import { DailyResultScreen } from './screens/DailyResultScreen'
 import './screens.css'
+import './screens/cosmetics-screens.css'
 
 type Screen =
   | 'title'
@@ -41,6 +66,36 @@ type Screen =
   | 'reveal'
   | 'summary'
   | 'leaderboard'
+  | 'wardrobe'
+  | 'chest'
+  | 'dailyResult'
+
+/** режим партии: кампания (10 раундов) или хроника дня (1 раунд) */
+type PlayMode = 'campaign' | 'daily'
+
+/** контекст открытого сундука: откуда, куда вернуться */
+interface ChestRun {
+  type: ChestType
+  from: 'campaign' | 'daily' | 'shop'
+  returnTo: 'title' | 'leaderboard' | 'wardrobe'
+  /** плашка над сундуком (например «Стрик 7!») */
+  plate?: string
+  /** бесплатный сундук партии открывается сам (не ждёт тапов) */
+  auto?: boolean
+}
+
+/** итог хроники дня для DailyResultScreen */
+interface DailySummary {
+  dayNo: number
+  dateLabel: string
+  cells: DailyCaseCell[]
+  streakDays: number
+  coins: number
+  companyOk: boolean
+  yearOk: boolean
+  bet: Direction | null
+  goldChest: boolean
+}
 
 interface QuizAnswer<T> {
   correct: boolean
@@ -49,6 +104,7 @@ interface QuizAnswer<T> {
 
 interface GameState {
   screen: Screen
+  mode: PlayMode
   roundIdx: number
   score: number
   streak: number
@@ -59,10 +115,17 @@ interface GameState {
   yearAnswer: QuizAnswer<number> | null
   lastResult: RoundAnswer | null
   submission: { id: number | null; rank: number; offline: boolean } | null
+  /** открытый сундук (экран 'chest') */
+  chest: ChestRun | null
+  /** номер дня запущенной хроники (для плашек daily-режима) */
+  dailyDayNo: number
+  /** итог завершённой хроники дня (экран 'dailyResult') */
+  dailyResult: DailySummary | null
 }
 
 type Action =
   | { type: 'start' }
+  | { type: 'startDaily'; roundIdx: number; dayNo: number }
   | { type: 'setNick'; nick: string }
   | { type: 'openNews' }
   | { type: 'toQuizCompany' }
@@ -71,14 +134,19 @@ type Action =
   | { type: 'betPlaced'; bet: Direction; timeLeftRatio: number }
   | { type: 'betTimeout' }
   | { type: 'next' }
+  | { type: 'dailyFinished'; result: DailySummary }
   | { type: 'leaderboard' }
   | { type: 'playAgain' }
   | { type: 'toTitle' }
+  | { type: 'openWardrobe' }
+  | { type: 'openChest'; chest: ChestRun }
+  | { type: 'chestDone' }
   | { type: 'submitted'; submission: GameState['submission'] }
 
 function createInitialState(): GameState {
   return {
     screen: 'title',
+    mode: 'campaign',
     roundIdx: 0,
     score: 0,
     streak: 0,
@@ -89,6 +157,9 @@ function createInitialState(): GameState {
     yearAnswer: null,
     lastResult: null,
     submission: null,
+    chest: null,
+    dailyDayNo: 0,
+    dailyResult: null,
   }
 }
 
@@ -131,7 +202,18 @@ function resolveBet(state: GameState, bet: Direction | null, timeLeftRatio: numb
 function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case 'start':
-      return { ...state, screen: 'nick' }
+      return { ...state, mode: 'campaign', screen: 'nick' }
+
+    case 'startDaily':
+      if (state.screen !== 'title') return state
+      return {
+        ...createInitialState(),
+        nick: state.nick,
+        mode: 'daily',
+        roundIdx: action.roundIdx,
+        dailyDayNo: action.dayNo,
+        screen: 'roundIntro',
+      }
 
     case 'setNick':
       return {
@@ -170,6 +252,8 @@ function reducer(state: GameState, action: Action): GameState {
 
     case 'next': {
       if (state.screen !== 'reveal') return state
+      // daily завершается экшеном dailyFinished (после записи стрика)
+      if (state.mode === 'daily') return state
       const nextIdx = state.roundIdx + 1
       if (nextIdx < gameData.rounds.length) {
         return {
@@ -184,6 +268,9 @@ function reducer(state: GameState, action: Action): GameState {
       return { ...state, screen: 'summary' }
     }
 
+    case 'dailyFinished':
+      return { ...state, screen: 'dailyResult', dailyResult: action.result }
+
     case 'leaderboard':
       return { ...state, screen: 'leaderboard' }
 
@@ -193,11 +280,40 @@ function reducer(state: GameState, action: Action): GameState {
     case 'toTitle':
       return { ...createInitialState(), nick: state.nick }
 
+    case 'openWardrobe':
+      if (state.screen !== 'title') return state
+      return { ...state, screen: 'wardrobe' }
+
+    case 'openChest':
+      return { ...state, screen: 'chest', chest: action.chest }
+
+    case 'chestDone': {
+      const go =
+        state.chest?.returnTo === 'wardrobe'
+          ? 'wardrobe'
+          : state.chest?.returnTo === 'leaderboard'
+            ? 'leaderboard'
+            : 'title'
+      return { ...state, screen: go, chest: null }
+    }
+
     case 'submitted':
       return { ...state, submission: action.submission }
 
     default:
       return state
+  }
+}
+
+/* «сегодня» хроники дня: ключ, номер дня, сыграно ли, стрик */
+function readDailyInfo() {
+  const key = todayKey()
+  const d = storage.getDaily()
+  return {
+    dateKey: key,
+    dayNo: dayNumber(key),
+    playedToday: d.lastDateKey === key,
+    streak: d.streak,
   }
 }
 
@@ -265,11 +381,23 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
   })
   const [submitting, setSubmitting] = useState(false)
   const persistedRef = useRef(-1)
+  /* защита от двойного тапа «К итогам» на ревиле daily */
+  const dailyDoneRef = useRef(false)
+
+  /* ── косметика и daily: единый стейт поверх storage ── */
+  const [coins, setCoins] = useState(() => storage.getCoins())
+  const [inv, setInv] = useState<string[]>(() => storage.getInventory())
+  const [equip, setEquip] = useState<EquipState>(() => storage.getEquip())
+  const [pity, setPity] = useState(() => storage.getPity())
+  const [dailyInfo, setDailyInfo] = useState(() => readDailyInfo())
 
   const meta = gameData.game
   const rounds = gameData.rounds
   const round = rounds[Math.min(state.roundIdx, rounds.length - 1)] ?? rounds[0]
-  const roundNo = state.roundIdx + 1
+  /* daily — один раунд: в шапках всегда «1 из 1», независимо от индекса кейса */
+  const isDaily = state.mode === 'daily'
+  const roundNo = isDaily ? 1 : state.roundIdx + 1
+  const roundsTotal = isDaily ? 1 : rounds.length
   const streakMult = comboMultiplier(state.streak, meta.comboSteps)
   const stats = summarize(state.log, rounds.length)
 
@@ -277,10 +405,19 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
   useEffect(() => {
     if (state.screen === 'title') {
       setTitleStats({ best: storage.getBestScore(), games: storage.getGamesCount() })
+      setDailyInfo(readDailyInfo())
     }
   }, [state.screen])
 
-  /* фиксация результата партии в localStorage (один раз за игру) */
+  /* e2e-хук подмены даты: пересчитать хронику дня без перезагрузки */
+  useEffect(() => {
+    const recompute = () => setDailyInfo(readDailyInfo())
+    window.addEventListener('ax-date-change', recompute)
+    return () => window.removeEventListener('ax-date-change', recompute)
+  }, [])
+
+  /* фиксация результата партии в localStorage (один раз за игру):
+     рекорд/счётчик + начисление монет за партию (спец §1) */
   useEffect(() => {
     if (state.screen === 'summary' && persistedRef.current !== state.log.length) {
       persistedRef.current = state.log.length
@@ -293,8 +430,9 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
         bestStreak: stats.bestStreak,
         at: new Date().toISOString(),
       })
+      setCoins(storage.addCoins(gameCoins(state.log)))
     }
-  }, [state.screen, state.log.length, state.score, rounds.length, stats.directionsCorrect, stats.bestStreak])
+  }, [state.screen, state.log, state.score, rounds.length, stats.directionsCorrect, stats.bestStreak])
 
   /* загрузка лидерборда при входе на экран (и после сабмита) */
   useEffect(() => {
@@ -314,6 +452,7 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
     dispatch({ type: 'setNick', nick })
   }, [])
 
+  /* сабмит: сначала деревянный сундук за партию, потом лидерборд */
   const handleSubmitScore = useCallback(async () => {
     if (submitting || state.submission) return
     setSubmitting(true)
@@ -326,8 +465,125 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
     })
     dispatch({ type: 'submitted', submission: { id: res.id, rank: res.rank, offline: res.offline } })
     setSubmitting(false)
-    dispatch({ type: 'leaderboard' })
+    dispatch({
+      type: 'openChest',
+      chest: { type: 'wooden', from: 'campaign', returnTo: 'leaderboard', auto: true },
+    })
   }, [submitting, state.submission, state.nick, state.score, rounds.length, stats.directionsCorrect, stats.bestStreak])
+
+  /* ── косметика: ролл дропа и все записи в storage ── */
+
+  const rollChestLoot = useCallback(
+    (chestType: ChestType): DropResult => {
+      const drop = rollDrop(chestType, inv, pity)
+      if (drop.duplicate) {
+        setCoins(storage.addCoins(drop.refundCoins))
+      } else {
+        setInv(storage.addToInventory(drop.itemId))
+      }
+      setPity(storage.setPity(pityAfter(chestType, drop, pity)))
+      return drop
+    },
+    [inv, pity],
+  )
+
+  /** надеть предмет из дропа («Экипировать» на сундуке) */
+  const handleChestEquip = useCallback((item: CosmeticItem) => {
+    setEquip(storage.equipItem(item.kind, item.id))
+  }, [])
+
+  /** гардероб: тап по карточке; повторный тап по надетому — снять */
+  const handleWardrobeEquip = useCallback(
+    (kind: CosmeticKind, id: string | null) => {
+      if (id !== null) {
+        const worn = kind === 'skin' ? equip.skin : kind === 'hat' ? equip.hat : equip.acc
+        if (worn === id) {
+          if (kind === 'skin') return // скин не снимается — всегда есть
+          setEquip(storage.equipItem(kind, null))
+          return
+        }
+      }
+      setEquip(storage.equipItem(kind, id))
+    },
+    [equip],
+  )
+
+  /** покупка сундука за монеты: списание здесь, экран — ChestScreen */
+  const handleBuyChest = useCallback(
+    (chest: 'pearl' | 'gold') => {
+      if (!storage.spendCoins(CHEST_PRICES[chest])) return
+      setCoins(storage.getCoins())
+      dispatch({ type: 'openChest', chest: { type: chest, from: 'shop', returnTo: 'wardrobe' } })
+    },
+    [],
+  )
+
+  /* ── хроника дня ── */
+
+  const handleStartDaily = useCallback(() => {
+    const info = readDailyInfo()
+    if (info.playedToday) return // один прогон в день (локальная дата)
+    dailyDoneRef.current = false
+    const dailyRound = pickDailyRound(rounds, info.dateKey)
+    const idx = dailyRound ? rounds.findIndex((r) => r.id === dailyRound.id) : -1
+    dispatch({ type: 'startDaily', roundIdx: Math.max(0, idx), dayNo: info.dayNo })
+  }, [rounds])
+
+  /** финал daily: стрик/монеты в storage, затем экран итога дня */
+  const handleDailyNext = useCallback(() => {
+    if (dailyDoneRef.current) return
+    const entry = state.lastResult
+    if (!entry) return
+    dailyDoneRef.current = true
+    const key = todayKey()
+    const prev = storage.getDaily()
+    const alreadyPlayed = prev.lastDateKey === key
+    const streak = alreadyPlayed
+      ? prev.streak
+      : continuesStreak(prev.lastDateKey, key)
+        ? prev.streak + 1
+        : 1
+    storage.setDaily({
+      lastDateKey: key,
+      streak,
+      bestStreak: Math.max(prev.bestStreak, streak),
+      playedDays: prev.playedDays + (alreadyPlayed ? 0 : 1),
+    })
+    const earned = dailyCoins(entry, streak)
+    setCoins(storage.addCoins(earned))
+    setDailyInfo(readDailyInfo())
+    const cell: DailyCaseCell = {
+      ticker: entry.ticker,
+      year: entry.year,
+      hit: entry.bet !== null && entry.bet === entry.actual,
+      up: entry.actual === 'up',
+    }
+    dispatch({
+      type: 'dailyFinished',
+      result: {
+        dayNo: dayNumber(key),
+        dateLabel: dateLabelRu(key),
+        cells: [cell],
+        streakDays: streak,
+        coins: earned,
+        companyOk: entry.companyCorrect,
+        yearOk: entry.yearCorrect,
+        bet: entry.bet,
+        goldChest: streak % 7 === 0,
+      },
+    })
+  }, [state.lastResult])
+
+  /** «Забрать сундук» на итогах дня: жемчужный, за стрик 7 — золотой */
+  const handleTakeDailyChest = useCallback(() => {
+    const r = state.dailyResult
+    dispatch({
+      type: 'openChest',
+      chest: r?.goldChest
+        ? { type: 'gold', from: 'daily', returnTo: 'title', plate: `Стрик ${r.streakDays}!` }
+        : { type: 'pearl', from: 'daily', returnTo: 'title' },
+    })
+  }, [state.dailyResult])
 
   const toggleMute = useCallback(() => {
     setMuted((m) => {
@@ -354,6 +610,17 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
           onToggleCrt={onToggleCrt}
           onPlay={() => dispatch({ type: 'start' })}
           onLeaderboard={() => dispatch({ type: 'leaderboard' })}
+          equip={equip}
+          coins={coins}
+          ownedCount={inv.length}
+          itemsTotal={COSMETICS.length}
+          daily={{
+            dayNo: dailyInfo.dayNo,
+            playedToday: dailyInfo.playedToday,
+            streak: dailyInfo.streak,
+          }}
+          onDaily={handleStartDaily}
+          onWardrobe={() => dispatch({ type: 'openWardrobe' })}
         />
       )
       break
@@ -363,12 +630,32 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
       break
 
     case 'roundIntro':
-      screen = (
+      screen = isDaily ? (
+        <div className="scr scr-daily-intro" key={`intro-daily-${round.id}`}>
+          <div className="daily-intro-badge" data-testid="daily-intro">
+            <IconCalendar /> Хроника дня №{state.dailyDayNo}
+            {dailyInfo.streak > 0 && (
+              <span className="daily-intro-flame">
+                <IconFire /> {dailyInfo.streak}
+              </span>
+            )}
+          </div>
+          <RoundIntroScreen
+            round={round}
+            roundNo={roundNo}
+            roundsTotal={roundsTotal}
+            score={state.score}
+            streak={state.streak}
+            multiplier={streakMult}
+            onNext={() => dispatch({ type: 'openNews' })}
+          />
+        </div>
+      ) : (
         <RoundIntroScreen
           key={`intro-${round.id}`}
           round={round}
           roundNo={roundNo}
-          roundsTotal={rounds.length}
+          roundsTotal={roundsTotal}
           score={state.score}
           streak={state.streak}
           multiplier={streakMult}
@@ -383,7 +670,7 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
           key={`news-${round.id}`}
           round={round}
           roundNo={roundNo}
-          roundsTotal={rounds.length}
+          roundsTotal={roundsTotal}
           score={state.score}
           streak={state.streak}
           multiplier={streakMult}
@@ -401,7 +688,7 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
           correctIndex={round.companyOptions.indexOf(round.answers.company)}
           pointsLabel={`+${meta.points.company}`}
           roundNo={roundNo}
-          roundsTotal={rounds.length}
+          roundsTotal={roundsTotal}
           score={state.score}
           streak={state.streak}
           multiplier={streakMult}
@@ -431,7 +718,7 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
           correctIndex={round.yearOptions.indexOf(round.answers.year)}
           pointsLabel={`+${meta.points.year}`}
           roundNo={roundNo}
-          roundsTotal={rounds.length}
+          roundsTotal={roundsTotal}
           score={state.score}
           streak={state.streak}
           multiplier={streakMult}
@@ -453,7 +740,7 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
           key={`bet-${round.id}`}
           round={round}
           roundNo={roundNo}
-          roundsTotal={rounds.length}
+          roundsTotal={roundsTotal}
           betSeconds={meta.betSeconds}
           score={state.score}
           streak={state.streak}
@@ -471,12 +758,13 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
           round={round}
           result={state.lastResult}
           roundNo={roundNo}
-          roundsTotal={rounds.length}
-          isLast={state.roundIdx >= rounds.length - 1}
+          roundsTotal={roundsTotal}
+          isLast={isDaily || state.roundIdx >= rounds.length - 1}
           score={state.score}
           streak={state.streak}
           multiplier={streakMult}
-          onNext={() => dispatch({ type: 'next' })}
+          equip={equip}
+          onNext={isDaily ? handleDailyNext : () => dispatch({ type: 'next' })}
         />
       ) : (
         <div className="scr" />
@@ -493,6 +781,7 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
           roundsTotal={rounds.length}
           submitting={submitting}
           submitted={!!state.submission}
+          equip={equip}
           onSubmit={() => void handleSubmitScore()}
         />
       )
@@ -517,6 +806,60 @@ function Game({ crtOn, onToggleCrt }: { crtOn: boolean; onToggleCrt: () => void 
         />
       )
       break
+
+    case 'wardrobe':
+      screen = (
+        <WardrobeScreen
+          key="wardrobe"
+          coins={coins}
+          ownedIds={inv}
+          equip={equip}
+          itemsTotal={COSMETICS.length}
+          onEquip={handleWardrobeEquip}
+          onBack={() => dispatch({ type: 'toTitle' })}
+          onBuyChest={handleBuyChest}
+        />
+      )
+      break
+
+    case 'chest': {
+      const run = state.chest
+      screen = run ? (
+        <ChestScreen
+          key={`chest-${run.type}-${run.from}`}
+          chest={run.type}
+          plate={run.plate}
+          autoAdvance={run.auto}
+          onRollLoot={() => rollChestLoot(run.type)}
+          onEquipItem={handleChestEquip}
+          onDone={() => dispatch({ type: 'chestDone' })}
+        />
+      ) : (
+        <div className="scr" />
+      )
+      break
+    }
+
+    case 'dailyResult': {
+      const r = state.dailyResult
+      screen = r ? (
+        <DailyResultScreen
+          key="daily-result"
+          dayNo={r.dayNo}
+          dateLabel={r.dateLabel}
+          cells={r.cells}
+          streakDays={r.streakDays}
+          coins={r.coins}
+          companyOk={r.companyOk}
+          yearOk={r.yearOk}
+          bet={r.bet}
+          onTakeChest={handleTakeDailyChest}
+        />
+      ) : (
+        <div className="scr" />
+      )
+      break
+    }
 
     default:
       screen = <div className="scr" />

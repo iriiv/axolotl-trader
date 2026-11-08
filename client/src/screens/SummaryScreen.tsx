@@ -6,9 +6,11 @@ import { Axolotl } from '../design/axolotl'
 import { Badge, Divider, PixelButton, PixelCard, SpeechBubble, StatRow } from '../design/ui'
 import { IconArrowUp } from '../design/icons'
 import { sfx } from '../design/sfx'
+import { gameCoins } from '../game/economy'
 import { summarize } from '../game/engine'
 import { summaryVerdict } from '../game/phrases'
 import type { RoundAnswer } from '../game/types'
+import type { EquipState } from '../game/storage'
 
 export interface SummaryScreenProps {
   nick: string
@@ -17,6 +19,8 @@ export interface SummaryScreenProps {
   roundsTotal: number
   submitting: boolean
   submitted: boolean
+  /** аксолотль в экипировке */
+  equip: EquipState
   onSubmit: () => void
 }
 
@@ -37,10 +41,12 @@ export function SummaryScreen({
   roundsTotal,
   submitting,
   submitted,
+  equip,
   onSubmit,
 }: SummaryScreenProps) {
   const stats = summarize(log, roundsTotal)
   const verdict = summaryVerdict(stats.directionsCorrect, roundsTotal)
+  const earnedCoins = gameCoins(log)
 
   /* фидбек «Ссылка скопирована» в пузыре аксолотля на 2 секунды */
   const [copied, setCopied] = useState(false)
@@ -88,7 +94,14 @@ export function SummaryScreen({
         </div>
 
         <div className="sum-axo">
-          <Axolotl mood={verdict.mood} size={124} animated />
+          <Axolotl
+            mood={verdict.mood}
+            size={124}
+            animated
+            skin={equip.skin}
+            hat={equip.hat ?? undefined}
+            acc={equip.acc ?? undefined}
+          />
           <SpeechBubble side="left">
             {copied ? (
               <strong className="sum-verdict">Ссылка скопирована</strong>
@@ -121,6 +134,11 @@ export function SummaryScreen({
             accent="aqua"
           />
           <StatRow label="Лучшая серия" value={`${stats.bestStreak} подряд`} accent="gold" />
+          <StatRow
+            label="Монеты"
+            value={`+${earnedCoins.toLocaleString('ru-RU')}`}
+            accent="gold"
+          />
           <StatRow
             label="Скорость решений"
             value={`${Math.round(stats.speedAccuracy * 100)}%`}
