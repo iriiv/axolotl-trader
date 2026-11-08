@@ -781,9 +781,8 @@ export function HubScreen(props: HubScreenProps) {
                 <span className="hub-tab__ico" aria-hidden="true">
                   {t.icon}
                 </span>
-                <span className="hub-tab__label">{t.label}</span>
                 {t.id === 'wardrobe' && (
-                  <span className="hub-tab__meta">
+                  <span className="hub-tab__meta" title="Собрано предметов">
                     {ownedIds.length}/{itemsTotal}
                   </span>
                 )}

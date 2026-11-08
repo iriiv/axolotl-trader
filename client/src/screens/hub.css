@@ -460,7 +460,7 @@
   gap: 4px;
   align-items: end;
   margin-top: 6px;
-  padding: 8px 4px 4px;
+  padding: 6px 4px 3px;
   border-top: 2px solid var(--line);
   background: color-mix(in srgb, var(--panel) 68%, var(--bg-deep));
 }
@@ -477,10 +477,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   width: 100%;
-  min-height: 52px;
-  padding: 4px 2px;
+  min-height: 42px;
+  padding: 3px 2px;
   color: var(--ink-dim);
   cursor: pointer;
 }
@@ -522,10 +522,6 @@
   background: color-mix(in srgb, var(--aqua) 20%, var(--panel));
   border: 2px solid var(--aqua);
   box-shadow: var(--shadow-1);
-}
-
-.hub-tab.is-on .hub-tab__label {
-  color: var(--aqua-hi);
 }
 
 /* центральная ▶: приподнятая «пиксель-круглая» кнопка 68px.
